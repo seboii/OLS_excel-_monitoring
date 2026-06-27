@@ -1,0 +1,27 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net9.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.OpenApi" />
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design">
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
+    <PackageReference Include="Serilog.AspNetCore" />
+    <PackageReference Include="Swashbuckle.AspNetCore" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Ols.ControlCenter.Infrastructure\Ols.ControlCenter.Infrastructure.csproj" />
+    <ProjectReference Include="..\Ols.ControlCenter.Application\Ols.ControlCenter.Application.csproj" />
+    <ProjectReference Include="..\Ols.ControlCenter.Domain\Ols.ControlCenter.Domain.csproj" />
+    <ProjectReference Include="..\Ols.ControlCenter.Shared\Ols.ControlCenter.Shared.csproj" />
+  </ItemGroup>
+
+</Project>

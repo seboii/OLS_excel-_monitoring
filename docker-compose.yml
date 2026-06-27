@@ -1,0 +1,53 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: ols-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ols
+      POSTGRES_PASSWORD: ols_dev_password
+      POSTGRES_DB: ols_control_center
+      TZ: Europe/Istanbul
+    ports:
+      - "5432:5432"
+    volumes:
+      - ols_pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ols -d ols_control_center"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    container_name: ols-redis
+    restart: unless-stopped
+    command: ["redis-server", "--appendonly", "yes"]
+    ports:
+      - "6379:6379"
+    volumes:
+      - ols_redisdata:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # İsteğe bağlı: tarayıcıdan veritabanı yönetimi (docker compose --profile tools up)
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: ols-pgadmin
+    restart: unless-stopped
+    profiles: ["tools"]
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@ols.local
+      PGADMIN_DEFAULT_PASSWORD: admin
+      PGADMIN_CONFIG_SERVER_MODE: "False"
+    ports:
+      - "5050:80"
+    depends_on:
+      - postgres
+
+volumes:
+  ols_pgdata:
+  ols_redisdata:

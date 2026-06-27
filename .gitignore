@@ -1,0 +1,46 @@
+## .NET
+bin/
+obj/
+*.user
+*.suo
+.vs/
+artifacts/
+[Dd]ebug/
+[Rr]elease/
+TestResults/
+*.trx
+*.coverage
+project.lock.json
+
+## Rider / JetBrains
+.idea/
+
+## VS Code
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.shared.json
+
+## Node / Frontend
+node_modules/
+web/dist/
+web/build/
+*.local
+.vite/
+
+## Ortam değişkenleri ve sırlar (ASLA commit'lenmez)
+.env
+.env.*
+!.env.example
+appsettings.*.local.json
+secrets.json
+*.pfx
+*.key
+
+## Loglar
+logs/
+*.log
+
+## OS
+Thumbs.db
+.DS_Store
+desktop.ini

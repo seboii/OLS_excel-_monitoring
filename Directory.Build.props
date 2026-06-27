@@ -1,0 +1,14 @@
+<Project>
+
+  <PropertyGroup>
+    <LangVersion>latest</LangVersion>
+    <InvariantGlobalization>false</InvariantGlobalization>
+    <NeutralLanguage>tr-TR</NeutralLanguage>
+    <Authors>OLS Dış Ticaret</Authors>
+    <Company>OLS Dış Ticaret</Company>
+    <Product>OLS Operasyon Kontrol Merkezi</Product>
+    <GenerateDocumentationFile>false</GenerateDocumentationFile>
+    <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
+  </PropertyGroup>
+
+</Project>

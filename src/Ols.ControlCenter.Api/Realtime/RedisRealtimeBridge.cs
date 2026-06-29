@@ -34,7 +34,11 @@ public sealed class RedisRealtimeBridge : BackgroundService
             {
                 try
                 {
-                    var msg = JsonSerializer.Deserialize<RealtimeMessage>(value!, JsonOptions);
+                    // RedisValue hem string'e hem byte[]'e örtük dönüştüğü için Deserialize çağrısı
+                    // belirsiz olur (CS0121); açık string dönüşümüyle tek bir overload'a sabitlenir.
+                    string? json = value;
+                    if (json is null) return;
+                    var msg = JsonSerializer.Deserialize<RealtimeMessage>(json, JsonOptions);
                     if (msg is null || string.IsNullOrEmpty(msg.Event)) return;
                     object? payload = msg.Payload.HasValue ? msg.Payload.Value : null;
                     await _hub.Clients.All.SendAsync("serverEvent", msg.Event, payload, stoppingToken);

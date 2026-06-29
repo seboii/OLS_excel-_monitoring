@@ -1,0 +1,5 @@
+Operation No;Client;Status;Loading Country;Loading City;Delivery Country;Delivery City;ETA;Planned Delivery;Service;Plate;Driver;Revenue;Cost;Currency
+TR-900001;Vestel A.Ş.;On Road;Türkiye;İzmir;Almanya;München;2026-07-05;2026-07-06;Ftl;34 TR 9001;A. Kaya;5.200,00;3.900,00;EUR
+TR-900002;Beko Tic.;Waiting Docs;Türkiye;İstanbul;Fransa;Paris;2026-07-03;2026-07-01;Ltl;34 TR 9002;M. Demir;2.100,00;1.700,00;EUR
+TR-900003;Şişecam;Delivered;Bulgaristan;Sofia;Türkiye;Bursa;2026-06-20;2026-06-22;Ftl;34 TR 9003;S. Ak;4.800,00;3.500,00;EUR
+TR-900004;Ülker;Transit;Türkiye;Ankara;İtalya;Milano;2026-07-10;2026-07-12;Ftl;06 TR 9004;K. Yıldız;6.300,00;4.700,00;EUR

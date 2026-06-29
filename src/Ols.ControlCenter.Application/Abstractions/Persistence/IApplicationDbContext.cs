@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using Ols.ControlCenter.Domain.Entities;
+using Ols.ControlCenter.Domain.Entities.Tracking;
 
 namespace Ols.ControlCenter.Application.Abstractions.Persistence;
 
@@ -30,6 +31,18 @@ public interface IApplicationDbContext
     DbSet<Notification> Notifications { get; }
     DbSet<AuditLog> AuditLogs { get; }
     DbSet<KpiSnapshot> KpiSnapshots { get; }
+    DbSet<ImportedRawRow> ImportedRawRows { get; }
+
+    // --- Takip tabloları (sayfa-başına tablo) ---
+    DbSet<SeaTransitRecord> SeaTransitRecords { get; }
+    DbSet<SeaImportRecord> SeaImportRecords { get; }
+    DbSet<SeaExportRecord> SeaExportRecords { get; }
+    DbSet<RoadTransitRecord> RoadTransitRecords { get; }
+    DbSet<RoadLoadRecord> RoadLoadRecords { get; }
+    DbSet<RoadArchiveRecord> RoadArchiveRecords { get; }
+    DbSet<AlaboraFinanceRecord> AlaboraFinanceRecords { get; }
+    DbSet<AirOperationRecord> AirOperationRecords { get; }
+    DbSet<AirDailyRecord> AirDailyRecords { get; }
 
     Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
 }

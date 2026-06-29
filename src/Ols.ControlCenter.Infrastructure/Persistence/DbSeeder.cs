@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using Ols.ControlCenter.Application.Abstractions.Security;
 using Ols.ControlCenter.Domain.Entities;
 using Ols.ControlCenter.Domain.Enums;
@@ -12,20 +13,89 @@ namespace Ols.ControlCenter.Infrastructure.Persistence;
 /// </summary>
 public static class DbSeeder
 {
-    public const string AdminEmail = "admin@ols.local";
-    public const string AdminPassword = "Admin123!";
+    /// <summary>Yalnızca <c>Seed:AdminEmail</c>/<c>Seed:AdminPassword</c> hiç ayarlanmamışsa kullanılan varsayılan.</summary>
+    public const string DefaultAdminEmail = "admin@ols.local";
+    public const string DefaultAdminPassword = "Admin123!";
 
-    public static async Task SeedAsync(AppDbContext db, IPasswordHasher hasher, CancellationToken ct = default)
+    public static async Task SeedAsync(AppDbContext db, IPasswordHasher hasher, IConfiguration config, CancellationToken ct = default)
     {
         var now = DateTimeOffset.UtcNow;
         var today = DateOnly.FromDateTime(DateTime.UtcNow);
 
+        var adminEmail = config["Seed:AdminEmail"];
+        var adminPassword = config["Seed:AdminPassword"];
+
         var departments = await SeedDepartmentsAsync(db, now, ct);
         var roles = await SeedRolesAsync(db, now, ct);
-        await SeedAdminAsync(db, hasher, roles, now, ct);
+        await SeedAdminAsync(db, hasher, roles, now,
+            string.IsNullOrWhiteSpace(adminEmail) ? DefaultAdminEmail : adminEmail,
+            string.IsNullOrWhiteSpace(adminPassword) ? DefaultAdminPassword : adminPassword,
+            ct);
         await SeedRiskRulesAsync(db, now, ct);
         await SeedStatusMappingsAsync(db, ct);
+        await SeedDataSourcesAsync(db, departments, now, ct);
         await SeedDemoOperationsAsync(db, departments, now, today, ct);
+    }
+
+    /// <summary>Verilen public linkleri veri kaynağı olarak hazırlar (ada göre idempotent).</summary>
+    private static async Task SeedDataSourcesAsync(AppDbContext db, Dictionary<string, Department> dept, DateTimeOffset now, CancellationToken ct)
+    {
+        async Task EnsureAsync(
+            string name, DataSourceType type, DataSourceAccessType access, string? url,
+            string? sheetName, TrackingBoardType board, TransportType? transport, string? deptCode,
+            int intervalMinutes = 15, int headerRow = 1)
+        {
+            if (await db.DataSources.AnyAsync(d => d.Name == name, ct)) return;
+            db.DataSources.Add(new DataSource
+            {
+                Name = name,
+                Type = type,
+                AccessType = access,
+                Url = url,
+                SheetName = sheetName,
+                HeaderRowIndex = headerRow,
+                TargetBoard = board,
+                DefaultTransportType = transport,
+                DepartmentId = deptCode != null && dept.TryGetValue(deptCode, out var d) ? d.Id : null,
+                ConnectionConfigEncrypted = string.Empty,
+                IsActive = true,
+                SyncIntervalMinutes = intervalMinutes,
+                CreatedAt = now,
+            });
+        }
+
+        const string denizUrl = "https://disk.yandex.com.tr/i/dZnHlx9gfUfRFw";
+        const string karayoluUrl = "https://disk.yandex.ru/i/H8GeygmiLVjlcw";
+
+        // DENİZ OPERASYON TAKİP RAPORU.xlsx — 4 sayfa = 4 takip tablosu
+        await EnsureAsync("Deniz · Denizyolu Transit", DataSourceType.YandexDiskExcel, DataSourceAccessType.Public,
+            denizUrl, "DENİZYOLU TRANSİT", TrackingBoardType.SeaTransit, TransportType.Sea, "SEA");
+        await EnsureAsync("Deniz · İthalat", DataSourceType.YandexDiskExcel, DataSourceAccessType.Public,
+            denizUrl, "İTHALAT", TrackingBoardType.SeaImport, TransportType.Sea, "SEA");
+        await EnsureAsync("Deniz · İhracat", DataSourceType.YandexDiskExcel, DataSourceAccessType.Public,
+            denizUrl, "İHRACAT", TrackingBoardType.SeaExport, TransportType.Sea, "SEA");
+        await EnsureAsync("Deniz · Karayolu Transit", DataSourceType.YandexDiskExcel, DataSourceAccessType.Public,
+            denizUrl, "KARAYOLU TRANSİT", TrackingBoardType.RoadTransit, TransportType.Road, "SEA");
+
+        // YOLDAKİ AVRUPA İTHALAT KARAYOLU YÜKLEMELERİ.xlsx — 2 sayfa = 2 takip tablosu
+        await EnsureAsync("Karayolu · Yoldaki Yükler", DataSourceType.YandexDiskExcel, DataSourceAccessType.Public,
+            karayoluUrl, "YOLDAKİ YÜKLER", TrackingBoardType.RoadLoad, TransportType.Road, "ROAD");
+        await EnsureAsync("Karayolu · Arşiv (Muratbey/Kerry/Mirlog)", DataSourceType.YandexDiskExcel, DataSourceAccessType.Public,
+            karayoluUrl, "MURATBEY KERRY & MİRLOG VARIŞ", TrackingBoardType.RoadArchive, TransportType.Road, "ROAD");
+
+        // ALABORA.xlsx — СЧЕТА-ПЛАТЕЖИ (fatura/tahsilat), başlık 4. satırda
+        const string alaboraUrl = "https://disk.yandex.com.tr/i/_moBFNX9Q_8kZA";
+        await EnsureAsync("Alabora · Tahsilat", DataSourceType.YandexDiskExcel, DataSourceAccessType.Public,
+            alaboraUrl, "СЧЕТА-ПЛАТЕЖИ", TrackingBoardType.Alabora, TransportType.Sea, "SEA", headerRow: 4);
+
+        // HAVA.xlsx — iki sayfa = iki takip tablosu
+        const string havaUrl = "https://disk.yandex.com.tr/i/h93uJsdMO5Bhgw";
+        await EnsureAsync("Hava · Operasyon Bilgileri", DataSourceType.YandexDiskExcel, DataSourceAccessType.Public,
+            havaUrl, "OPERASYON BİLGİLERİ", TrackingBoardType.Air, TransportType.Air, "AIR");
+        await EnsureAsync("Hava · Günlük Liste", DataSourceType.YandexDiskExcel, DataSourceAccessType.Public,
+            havaUrl, "GÜNLÜK LİSTE", TrackingBoardType.AirDaily, TransportType.Air, "AIR", headerRow: 1);
+
+        await db.SaveChangesAsync(ct);
     }
 
     private static async Task<Dictionary<string, Department>> SeedDepartmentsAsync(
@@ -70,7 +140,8 @@ public static class DbSeeder
     }
 
     private static async Task SeedAdminAsync(
-        AppDbContext db, IPasswordHasher hasher, Dictionary<string, Role> roles, DateTimeOffset now, CancellationToken ct)
+        AppDbContext db, IPasswordHasher hasher, Dictionary<string, Role> roles, DateTimeOffset now,
+        string adminEmail, string adminPassword, CancellationToken ct)
     {
         if (await db.Users.AnyAsync(ct))
             return;
@@ -78,8 +149,8 @@ public static class DbSeeder
         var admin = new User
         {
             FullName = "Sistem Yöneticisi",
-            Email = AdminEmail,
-            PasswordHash = hasher.Hash(AdminPassword),
+            Email = adminEmail,
+            PasswordHash = hasher.Hash(adminPassword),
             IsActive = true,
             CreatedAt = now,
             UserRoles = new List<UserRole> { new() { RoleId = roles[AppRoles.Admin].Id } }

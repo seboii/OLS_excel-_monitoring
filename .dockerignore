@@ -1,0 +1,15 @@
+**/bin
+**/obj
+**/node_modules
+**/dist
+**/.vs
+**/.idea
+**/.vite
+.git
+.github
+.claude
+**/*.user
+**/TestResults
+web/dist
+web/node_modules
+*.md

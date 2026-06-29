@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using Ols.ControlCenter.Application.Abstractions.Persistence;
 using Ols.ControlCenter.Domain.Common;
 using Ols.ControlCenter.Domain.Entities;
+using Ols.ControlCenter.Domain.Entities.Tracking;
 using Ols.ControlCenter.Domain.Enums;
 
 namespace Ols.ControlCenter.Infrastructure.Persistence;
@@ -36,6 +37,18 @@ public class AppDbContext : DbContext, IApplicationDbContext
     public DbSet<Notification> Notifications => Set<Notification>();
     public DbSet<AuditLog> AuditLogs => Set<AuditLog>();
     public DbSet<KpiSnapshot> KpiSnapshots => Set<KpiSnapshot>();
+    public DbSet<ImportedRawRow> ImportedRawRows => Set<ImportedRawRow>();
+
+    // --- Takip tabloları (sayfa-başına tablo) ---
+    public DbSet<SeaTransitRecord> SeaTransitRecords => Set<SeaTransitRecord>();
+    public DbSet<SeaImportRecord> SeaImportRecords => Set<SeaImportRecord>();
+    public DbSet<SeaExportRecord> SeaExportRecords => Set<SeaExportRecord>();
+    public DbSet<RoadTransitRecord> RoadTransitRecords => Set<RoadTransitRecord>();
+    public DbSet<RoadLoadRecord> RoadLoadRecords => Set<RoadLoadRecord>();
+    public DbSet<RoadArchiveRecord> RoadArchiveRecords => Set<RoadArchiveRecord>();
+    public DbSet<AlaboraFinanceRecord> AlaboraFinanceRecords => Set<AlaboraFinanceRecord>();
+    public DbSet<AirOperationRecord> AirOperationRecords => Set<AirOperationRecord>();
+    public DbSet<AirDailyRecord> AirDailyRecords => Set<AirDailyRecord>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -81,6 +94,8 @@ public class AppDbContext : DbContext, IApplicationDbContext
         b.Properties<TaskPriority>().HaveConversion<string>().HaveMaxLength(40);
         b.Properties<CommentType>().HaveConversion<string>().HaveMaxLength(40);
         b.Properties<DataSourceType>().HaveConversion<string>().HaveMaxLength(40);
+        b.Properties<DataSourceAccessType>().HaveConversion<string>().HaveMaxLength(40);
+        b.Properties<TrackingBoardType>().HaveConversion<string>().HaveMaxLength(40);
         b.Properties<SyncStatus>().HaveConversion<string>().HaveMaxLength(40);
         b.Properties<NotificationLevel>().HaveConversion<string>().HaveMaxLength(40);
         b.Properties<NotificationType>().HaveConversion<string>().HaveMaxLength(40);

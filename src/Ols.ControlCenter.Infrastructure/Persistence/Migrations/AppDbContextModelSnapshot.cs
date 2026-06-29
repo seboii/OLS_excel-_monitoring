@@ -31,6 +31,16 @@ namespace Ols.ControlCenter.Infrastructure.Persistence.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
 
+                    b.Property<string>("BoardKey")
+                        .HasMaxLength(60)
+                        .HasColumnType("character varying(60)")
+                        .HasColumnName("board_key");
+
+                    b.Property<string>("BoardTitle")
+                        .HasMaxLength(120)
+                        .HasColumnType("character varying(120)")
+                        .HasColumnName("board_title");
+
                     b.Property<DateTimeOffset>("CreatedAt")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("created_at");
@@ -59,13 +69,23 @@ namespace Ols.ControlCenter.Infrastructure.Persistence.Migrations
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("first_triggered_at");
 
+                    b.Property<string>("Group")
+                        .HasMaxLength(40)
+                        .HasColumnType("character varying(40)")
+                        .HasColumnName("group");
+
                     b.Property<DateTimeOffset>("LastTriggeredAt")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("last_triggered_at");
 
-                    b.Property<long>("OperationId")
+                    b.Property<long?>("OperationId")
                         .HasColumnType("bigint")
                         .HasColumnName("operation_id");
+
+                    b.Property<string>("RecordRef")
+                        .HasMaxLength(120)
+                        .HasColumnType("character varying(120)")
+                        .HasColumnName("record_ref");
 
                     b.Property<string>("ResolutionNote")
                         .HasMaxLength(1000)
@@ -122,6 +142,9 @@ namespace Ols.ControlCenter.Infrastructure.Persistence.Migrations
 
                     b.HasKey("Id")
                         .HasName("pk_alerts");
+
+                    b.HasIndex("BoardKey")
+                        .HasDatabaseName("ix_alerts_board_key");
 
                     b.HasIndex("DedupeKey")
                         .IsUnique()
@@ -219,6 +242,16 @@ namespace Ols.ControlCenter.Infrastructure.Persistence.Migrations
                         .HasColumnType("bigint")
                         .HasColumnName("author_user_id");
 
+                    b.Property<string>("BoardKey")
+                        .HasMaxLength(60)
+                        .HasColumnType("character varying(60)")
+                        .HasColumnName("board_key");
+
+                    b.Property<string>("BoardTitle")
+                        .HasMaxLength(120)
+                        .HasColumnType("character varying(120)")
+                        .HasColumnName("board_title");
+
                     b.Property<string>("Body")
                         .IsRequired()
                         .HasMaxLength(4000)
@@ -241,6 +274,11 @@ namespace Ols.ControlCenter.Infrastructure.Persistence.Migrations
                         .HasColumnType("bigint")
                         .HasColumnName("created_by_user_id");
 
+                    b.Property<string>("Group")
+                        .HasMaxLength(40)
+                        .HasColumnType("character varying(40)")
+                        .HasColumnName("group");
+
                     b.Property<bool>("IsCancelled")
                         .HasColumnType("boolean")
                         .HasColumnName("is_cancelled");
@@ -250,9 +288,14 @@ namespace Ols.ControlCenter.Infrastructure.Persistence.Migrations
                         .HasColumnType("jsonb")
                         .HasColumnName("mentions");
 
-                    b.Property<long>("OperationId")
+                    b.Property<long?>("OperationId")
                         .HasColumnType("bigint")
                         .HasColumnName("operation_id");
+
+                    b.Property<string>("RecordRef")
+                        .HasMaxLength(120)
+                        .HasColumnType("character varying(120)")
+                        .HasColumnName("record_ref");
 
                     b.Property<string>("Type")
                         .IsRequired()
@@ -276,6 +319,9 @@ namespace Ols.ControlCenter.Infrastructure.Persistence.Migrations
 
                     b.HasIndex("OperationId", "CreatedAt")
                         .HasDatabaseName("ix_comments_operation_id_created_at");
+
+                    b.HasIndex("BoardKey", "RecordRef", "CreatedAt")
+                        .HasDatabaseName("ix_comments_board_key_record_ref_created_at");
 
                     b.ToTable("comments", (string)null);
                 });
@@ -363,6 +409,12 @@ namespace Ols.ControlCenter.Infrastructure.Persistence.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
 
+                    b.Property<string>("AccessType")
+                        .IsRequired()
+                        .HasMaxLength(40)
+                        .HasColumnType("character varying(40)")
+                        .HasColumnName("access_type");
+
                     b.Property<string>("ConnectionConfigEncrypted")
                         .IsRequired()
                         .HasColumnType("text")
@@ -401,12 +453,17 @@ namespace Ols.ControlCenter.Infrastructure.Persistence.Migrations
                         .HasColumnType("boolean")
                         .HasColumnName("is_deleted");
 
+                    b.Property<DateTimeOffset?>("LastSuccessSyncAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("last_success_sync_at");
+
                     b.Property<DateTimeOffset?>("LastSyncAt")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("last_sync_at");
 
                     b.Property<string>("LastSyncError")
-                        .HasColumnType("text")
+                        .HasMaxLength(2000)
+                        .HasColumnType("character varying(2000)")
                         .HasColumnName("last_sync_error");
 
                     b.Property<string>("LastSyncStatus")
@@ -429,6 +486,12 @@ namespace Ols.ControlCenter.Infrastructure.Persistence.Migrations
                         .HasColumnType("integer")
                         .HasColumnName("sync_interval_minutes");
 
+                    b.Property<string>("TargetBoard")
+                        .IsRequired()
+                        .HasMaxLength(40)
+                        .HasColumnType("character varying(40)")
+                        .HasColumnName("target_board");
+
                     b.Property<string>("Type")
                         .IsRequired()
                         .HasMaxLength(40)
@@ -442,6 +505,11 @@ namespace Ols.ControlCenter.Infrastructure.Persistence.Migrations
                     b.Property<long?>("UpdatedByUserId")
                         .HasColumnType("bigint")
                         .HasColumnName("updated_by_user_id");
+
+                    b.Property<string>("Url")
+                        .HasMaxLength(1000)
+                        .HasColumnType("character varying(1000)")
+                        .HasColumnName("url");
 
                     b.HasKey("Id")
                         .HasName("pk_data_sources");
@@ -468,6 +536,11 @@ namespace Ols.ControlCenter.Infrastructure.Persistence.Migrations
                         .HasColumnType("bigint")
                         .HasColumnName("data_source_id");
 
+                    b.Property<string>("DefaultValue")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)")
+                        .HasColumnName("default_value");
+
                     b.Property<bool>("IsRequired")
                         .HasColumnType("boolean")
                         .HasColumnName("is_required");
@@ -477,6 +550,10 @@ namespace Ols.ControlCenter.Infrastructure.Persistence.Migrations
                         .HasMaxLength(160)
                         .HasColumnType("character varying(160)")
                         .HasColumnName("source_column");
+
+                    b.Property<int?>("SourceColumnIndex")
+                        .HasColumnType("integer")
+                        .HasColumnName("source_column_index");
 
                     b.Property<string>("TargetField")
                         .IsRequired()
@@ -488,6 +565,11 @@ namespace Ols.ControlCenter.Infrastructure.Persistence.Migrations
                         .HasMaxLength(120)
                         .HasColumnType("character varying(120)")
                         .HasColumnName("transform");
+
+                    b.Property<string>("TransformType")
+                        .HasMaxLength(60)
+                        .HasColumnType("character varying(60)")
+                        .HasColumnName("transform_type");
 
                     b.HasKey("Id")
                         .HasName("pk_data_source_column_mappings");
@@ -516,6 +598,11 @@ namespace Ols.ControlCenter.Infrastructure.Persistence.Migrations
                         .HasColumnType("bigint")
                         .HasColumnName("duration_ms");
 
+                    b.Property<string>("FileName")
+                        .HasMaxLength(260)
+                        .HasColumnType("character varying(260)")
+                        .HasColumnName("file_name");
+
                     b.Property<DateTimeOffset?>("FinishedAt")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("finished_at");
@@ -536,6 +623,11 @@ namespace Ols.ControlCenter.Infrastructure.Persistence.Migrations
                     b.Property<int>("RowsUpserted")
                         .HasColumnType("integer")
                         .HasColumnName("rows_upserted");
+
+                    b.Property<string>("SheetName")
+                        .HasMaxLength(120)
+                        .HasColumnType("character varying(120)")
+                        .HasColumnName("sheet_name");
 
                     b.Property<DateTimeOffset>("StartedAt")
                         .HasColumnType("timestamp with time zone")
@@ -695,6 +787,54 @@ namespace Ols.ControlCenter.Infrastructure.Persistence.Migrations
                         .HasDatabaseName("ix_documents_operation_id_doc_type");
 
                     b.ToTable("documents", (string)null);
+                });
+
+            modelBuilder.Entity("Ols.ControlCenter.Domain.Entities.ImportedRawRow", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint")
+                        .HasColumnName("id");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<long>("DataSourceId")
+                        .HasColumnType("bigint")
+                        .HasColumnName("data_source_id");
+
+                    b.Property<long?>("DataSyncLogId")
+                        .HasColumnType("bigint")
+                        .HasColumnName("data_sync_log_id");
+
+                    b.Property<string>("ErrorMessage")
+                        .HasMaxLength(1000)
+                        .HasColumnType("character varying(1000)")
+                        .HasColumnName("error_message");
+
+                    b.Property<bool>("IsImported")
+                        .HasColumnType("boolean")
+                        .HasColumnName("is_imported");
+
+                    b.Property<string>("RawJson")
+                        .IsRequired()
+                        .HasColumnType("jsonb")
+                        .HasColumnName("raw_json");
+
+                    b.Property<int>("RowIndex")
+                        .HasColumnType("integer")
+                        .HasColumnName("row_index");
+
+                    b.HasKey("Id")
+                        .HasName("pk_imported_raw_rows");
+
+                    b.HasIndex("DataSourceId", "DataSyncLogId")
+                        .HasDatabaseName("ix_imported_raw_rows_data_source_id_data_sync_log_id");
+
+                    b.ToTable("imported_raw_rows", (string)null);
                 });
 
             modelBuilder.Entity("Ols.ControlCenter.Domain.Entities.KpiSnapshot", b =>
@@ -1571,6 +1711,1228 @@ namespace Ols.ControlCenter.Infrastructure.Persistence.Migrations
                     b.ToTable("status_mappings", (string)null);
                 });
 
+            modelBuilder.Entity("Ols.ControlCenter.Domain.Entities.Tracking.AirDailyRecord", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint")
+                        .HasColumnName("id");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
+
+                    b.Property<string>("Address")
+                        .HasColumnType("text")
+                        .HasColumnName("address");
+
+                    b.Property<string>("Airline")
+                        .HasColumnType("text")
+                        .HasColumnName("airline");
+
+                    b.Property<string>("Airport")
+                        .HasColumnType("text")
+                        .HasColumnName("airport");
+
+                    b.Property<string>("Authorized")
+                        .HasColumnType("text")
+                        .HasColumnName("authorized");
+
+                    b.Property<string>("Carrier")
+                        .HasColumnType("text")
+                        .HasColumnName("carrier");
+
+                    b.Property<long>("DataSourceId")
+                        .HasColumnType("bigint")
+                        .HasColumnName("data_source_id");
+
+                    b.Property<int>("DelayDays")
+                        .HasColumnType("integer")
+                        .HasColumnName("delay_days");
+
+                    b.Property<string>("Destination")
+                        .HasColumnType("text")
+                        .HasColumnName("destination");
+
+                    b.Property<string>("Flag")
+                        .HasColumnType("text")
+                        .HasColumnName("flag");
+
+                    b.Property<string>("Flight")
+                        .HasColumnType("text")
+                        .HasColumnName("flight");
+
+                    b.Property<string>("HawbNo")
+                        .HasColumnType("text")
+                        .HasColumnName("hawb_no");
+
+                    b.Property<DateTimeOffset>("ImportedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("imported_at");
+
+                    b.Property<string>("Incoterm")
+                        .HasColumnType("text")
+                        .HasColumnName("incoterm");
+
+                    b.Property<bool>("IsArchived")
+                        .HasColumnType("boolean")
+                        .HasColumnName("is_archived");
+
+                    b.Property<string>("Kgs")
+                        .HasColumnType("text")
+                        .HasColumnName("kgs");
+
+                    b.Property<string>("MawbNo")
+                        .HasColumnType("text")
+                        .HasColumnName("mawb_no");
+
+                    b.Property<DateOnly?>("OptionDate")
+                        .HasColumnType("date")
+                        .HasColumnName("option_date");
+
+                    b.Property<string>("OptionTime")
+                        .HasColumnType("text")
+                        .HasColumnName("option_time");
+
+                    b.Property<string>("PieceCount")
+                        .HasColumnType("text")
+                        .HasColumnName("piece_count");
+
+                    b.Property<string>("RawJson")
+                        .IsRequired()
+                        .HasColumnType("jsonb")
+                        .HasColumnName("raw_json");
+
+                    b.Property<string>("ReferenceNumber")
+                        .HasColumnType("text")
+                        .HasColumnName("reference_number");
+
+                    b.Property<string>("RiskLevel")
+                        .IsRequired()
+                        .HasMaxLength(40)
+                        .HasColumnType("character varying(40)")
+                        .HasColumnName("risk_level");
+
+                    b.Property<int>("RowIndex")
+                        .HasColumnType("integer")
+                        .HasColumnName("row_index");
+
+                    b.Property<string>("Sender")
+                        .HasColumnType("text")
+                        .HasColumnName("sender");
+
+                    b.Property<string>("ShipmentNumber")
+                        .HasColumnType("text")
+                        .HasColumnName("shipment_number");
+
+                    b.Property<string>("SourceRowKey")
+                        .IsRequired()
+                        .HasMaxLength(120)
+                        .HasColumnType("character varying(120)")
+                        .HasColumnName("source_row_key");
+
+                    b.Property<string>("Status")
+                        .HasColumnType("text")
+                        .HasColumnName("status");
+
+                    b.Property<string>("StatusText")
+                        .HasColumnType("text")
+                        .HasColumnName("status_text");
+
+                    b.Property<DateTimeOffset?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at");
+
+                    b.Property<string>("UserId")
+                        .HasColumnType("text")
+                        .HasColumnName("user_id");
+
+                    b.Property<string>("Warehouse")
+                        .HasColumnType("text")
+                        .HasColumnName("warehouse");
+
+                    b.Property<string>("WarehouseCode")
+                        .HasColumnType("text")
+                        .HasColumnName("warehouse_code");
+
+                    b.Property<DateOnly?>("WarehouseEntry")
+                        .HasColumnType("date")
+                        .HasColumnName("warehouse_entry");
+
+                    b.HasKey("Id")
+                        .HasName("pk_air_daily_records");
+
+                    b.HasIndex("DataSourceId")
+                        .HasDatabaseName("ix_air_daily_records_data_source_id");
+
+                    b.HasIndex("DataSourceId", "SourceRowKey")
+                        .HasDatabaseName("ix_air_daily_records_data_source_id_source_row_key");
+
+                    b.ToTable("air_daily_records", (string)null);
+                });
+
+            modelBuilder.Entity("Ols.ControlCenter.Domain.Entities.Tracking.AirOperationRecord", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint")
+                        .HasColumnName("id");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
+
+                    b.Property<string>("Airline")
+                        .HasColumnType("text")
+                        .HasColumnName("airline");
+
+                    b.Property<string>("Archive")
+                        .HasColumnType("text")
+                        .HasColumnName("archive");
+
+                    b.Property<string>("ColA")
+                        .HasColumnType("text")
+                        .HasColumnName("col_a");
+
+                    b.Property<string>("ColS")
+                        .HasColumnType("text")
+                        .HasColumnName("col_s");
+
+                    b.Property<long>("DataSourceId")
+                        .HasColumnType("bigint")
+                        .HasColumnName("data_source_id");
+
+                    b.Property<int>("DelayDays")
+                        .HasColumnType("integer")
+                        .HasColumnName("delay_days");
+
+                    b.Property<string>("Flight")
+                        .HasColumnType("text")
+                        .HasColumnName("flight");
+
+                    b.Property<DateTimeOffset>("ImportedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("imported_at");
+
+                    b.Property<bool>("IsArchived")
+                        .HasColumnType("boolean")
+                        .HasColumnName("is_archived");
+
+                    b.Property<string>("Notes")
+                        .HasColumnType("text")
+                        .HasColumnName("notes");
+
+                    b.Property<DateOnly?>("OptionDate")
+                        .HasColumnType("date")
+                        .HasColumnName("option_date");
+
+                    b.Property<string>("OptionTime")
+                        .HasColumnType("text")
+                        .HasColumnName("option_time");
+
+                    b.Property<string>("RawJson")
+                        .IsRequired()
+                        .HasColumnType("jsonb")
+                        .HasColumnName("raw_json");
+
+                    b.Property<string>("ReferenceNumber")
+                        .HasColumnType("text")
+                        .HasColumnName("reference_number");
+
+                    b.Property<string>("RiskLevel")
+                        .IsRequired()
+                        .HasMaxLength(40)
+                        .HasColumnType("character varying(40)")
+                        .HasColumnName("risk_level");
+
+                    b.Property<int>("RowIndex")
+                        .HasColumnType("integer")
+                        .HasColumnName("row_index");
+
+                    b.Property<string>("Sender")
+                        .HasColumnType("text")
+                        .HasColumnName("sender");
+
+                    b.Property<string>("Sn")
+                        .HasColumnType("text")
+                        .HasColumnName("sn");
+
+                    b.Property<string>("SourceRowKey")
+                        .IsRequired()
+                        .HasMaxLength(120)
+                        .HasColumnType("character varying(120)")
+                        .HasColumnName("source_row_key");
+
+                    b.Property<string>("StatusText")
+                        .HasColumnType("text")
+                        .HasColumnName("status_text");
+
+                    b.Property<DateTimeOffset?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at");
+
+                    b.Property<string>("Warehouse")
+                        .HasColumnType("text")
+                        .HasColumnName("warehouse");
+
+                    b.Property<DateOnly?>("WarehouseEntry")
+                        .HasColumnType("date")
+                        .HasColumnName("warehouse_entry");
+
+                    b.HasKey("Id")
+                        .HasName("pk_air_operation_records");
+
+                    b.HasIndex("DataSourceId")
+                        .HasDatabaseName("ix_air_operation_records_data_source_id");
+
+                    b.HasIndex("DataSourceId", "SourceRowKey")
+                        .HasDatabaseName("ix_air_operation_records_data_source_id_source_row_key");
+
+                    b.ToTable("air_operation_records", (string)null);
+                });
+
+            modelBuilder.Entity("Ols.ControlCenter.Domain.Entities.Tracking.AlaboraFinanceRecord", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint")
+                        .HasColumnName("id");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
+
+                    b.Property<string>("Amount")
+                        .HasColumnType("text")
+                        .HasColumnName("amount");
+
+                    b.Property<string>("CargoStatus")
+                        .HasColumnType("text")
+                        .HasColumnName("cargo_status");
+
+                    b.Property<string>("Collection")
+                        .HasColumnType("text")
+                        .HasColumnName("collection");
+
+                    b.Property<string>("CommentOls")
+                        .HasColumnType("text")
+                        .HasColumnName("comment_ols");
+
+                    b.Property<string>("CommentOsh")
+                        .HasColumnType("text")
+                        .HasColumnName("comment_osh");
+
+                    b.Property<string>("CompanyTitle")
+                        .HasColumnType("text")
+                        .HasColumnName("company_title");
+
+                    b.Property<string>("Currency")
+                        .HasColumnType("text")
+                        .HasColumnName("currency");
+
+                    b.Property<string>("CustomerRep")
+                        .HasColumnType("text")
+                        .HasColumnName("customer_rep");
+
+                    b.Property<long>("DataSourceId")
+                        .HasColumnType("bigint")
+                        .HasColumnName("data_source_id");
+
+                    b.Property<int>("DelayDays")
+                        .HasColumnType("integer")
+                        .HasColumnName("delay_days");
+
+                    b.Property<string>("DocsReadiness")
+                        .HasColumnType("text")
+                        .HasColumnName("docs_readiness");
+
+                    b.Property<DateOnly?>("FtDate")
+                        .HasColumnType("date")
+                        .HasColumnName("ft_date");
+
+                    b.Property<DateTimeOffset>("ImportedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("imported_at");
+
+                    b.Property<string>("IncomingPayments")
+                        .HasColumnType("text")
+                        .HasColumnName("incoming_payments");
+
+                    b.Property<string>("InvoiceMarked")
+                        .HasColumnType("text")
+                        .HasColumnName("invoice_marked");
+
+                    b.Property<bool>("IsArchived")
+                        .HasColumnType("boolean")
+                        .HasColumnName("is_archived");
+
+                    b.Property<string>("LoadingDetails")
+                        .HasColumnType("text")
+                        .HasColumnName("loading_details");
+
+                    b.Property<string>("LoadingType")
+                        .HasColumnType("text")
+                        .HasColumnName("loading_type");
+
+                    b.Property<string>("No")
+                        .HasColumnType("text")
+                        .HasColumnName("no");
+
+                    b.Property<string>("OrderContract")
+                        .HasColumnType("text")
+                        .HasColumnName("order_contract");
+
+                    b.Property<DateOnly?>("PaymentDate")
+                        .HasColumnType("date")
+                        .HasColumnName("payment_date");
+
+                    b.Property<string>("RateNet")
+                        .HasColumnType("text")
+                        .HasColumnName("rate_net");
+
+                    b.Property<string>("RawJson")
+                        .IsRequired()
+                        .HasColumnType("jsonb")
+                        .HasColumnName("raw_json");
+
+                    b.Property<string>("RiskLevel")
+                        .IsRequired()
+                        .HasMaxLength(40)
+                        .HasColumnType("character varying(40)")
+                        .HasColumnName("risk_level");
+
+                    b.Property<int>("RowIndex")
+                        .HasColumnType("integer")
+                        .HasColumnName("row_index");
+
+                    b.Property<string>("Rub")
+                        .HasColumnType("text")
+                        .HasColumnName("rub");
+
+                    b.Property<string>("SourceRowKey")
+                        .IsRequired()
+                        .HasMaxLength(120)
+                        .HasColumnType("character varying(120)")
+                        .HasColumnName("source_row_key");
+
+                    b.Property<string>("StatusText")
+                        .HasColumnType("text")
+                        .HasColumnName("status_text");
+
+                    b.Property<string>("TransportDocs")
+                        .HasColumnType("text")
+                        .HasColumnName("transport_docs");
+
+                    b.Property<DateTimeOffset?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at");
+
+                    b.Property<string>("Voyage")
+                        .HasColumnType("text")
+                        .HasColumnName("voyage");
+
+                    b.HasKey("Id")
+                        .HasName("pk_alabora_finance_records");
+
+                    b.HasIndex("DataSourceId")
+                        .HasDatabaseName("ix_alabora_finance_records_data_source_id");
+
+                    b.HasIndex("DataSourceId", "SourceRowKey")
+                        .HasDatabaseName("ix_alabora_finance_records_data_source_id_source_row_key");
+
+                    b.ToTable("alabora_finance_records", (string)null);
+                });
+
+            modelBuilder.Entity("Ols.ControlCenter.Domain.Entities.Tracking.RoadArchiveRecord", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint")
+                        .HasColumnName("id");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
+
+                    b.Property<string>("ArrivalWarehouse")
+                        .HasColumnType("text")
+                        .HasColumnName("arrival_warehouse");
+
+                    b.Property<long>("DataSourceId")
+                        .HasColumnType("bigint")
+                        .HasColumnName("data_source_id");
+
+                    b.Property<int>("DelayDays")
+                        .HasColumnType("integer")
+                        .HasColumnName("delay_days");
+
+                    b.Property<string>("DepartureDate")
+                        .HasColumnType("text")
+                        .HasColumnName("departure_date");
+
+                    b.Property<string>("ImportCountry")
+                        .HasColumnType("text")
+                        .HasColumnName("import_country");
+
+                    b.Property<DateTimeOffset>("ImportedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("imported_at");
+
+                    b.Property<bool>("IsArchived")
+                        .HasColumnType("boolean")
+                        .HasColumnName("is_archived");
+
+                    b.Property<string>("OrderDate")
+                        .HasColumnType("text")
+                        .HasColumnName("order_date");
+
+                    b.Property<string>("PackageCount")
+                        .HasColumnType("text")
+                        .HasColumnName("package_count");
+
+                    b.Property<string>("Plate")
+                        .HasColumnType("text")
+                        .HasColumnName("plate");
+
+                    b.Property<string>("ProductType")
+                        .HasColumnType("text")
+                        .HasColumnName("product_type");
+
+                    b.Property<string>("PurchaseFreight")
+                        .HasColumnType("text")
+                        .HasColumnName("purchase_freight");
+
+                    b.Property<string>("RawJson")
+                        .IsRequired()
+                        .HasColumnType("jsonb")
+                        .HasColumnName("raw_json");
+
+                    b.Property<string>("Receiver")
+                        .HasColumnType("text")
+                        .HasColumnName("receiver");
+
+                    b.Property<string>("RiskLevel")
+                        .IsRequired()
+                        .HasMaxLength(40)
+                        .HasColumnType("character varying(40)")
+                        .HasColumnName("risk_level");
+
+                    b.Property<int>("RowIndex")
+                        .HasColumnType("integer")
+                        .HasColumnName("row_index");
+
+                    b.Property<string>("Sender")
+                        .HasColumnType("text")
+                        .HasColumnName("sender");
+
+                    b.Property<string>("SourceRowKey")
+                        .IsRequired()
+                        .HasMaxLength(120)
+                        .HasColumnType("character varying(120)")
+                        .HasColumnName("source_row_key");
+
+                    b.Property<string>("Stackable")
+                        .HasColumnType("text")
+                        .HasColumnName("stackable");
+
+                    b.Property<string>("StatusText")
+                        .HasColumnType("text")
+                        .HasColumnName("status_text");
+
+                    b.Property<string>("Supplier")
+                        .HasColumnType("text")
+                        .HasColumnName("supplier");
+
+                    b.Property<DateTimeOffset?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at");
+
+                    b.Property<string>("Weight")
+                        .HasColumnType("text")
+                        .HasColumnName("weight");
+
+                    b.Property<string>("YdgIncluded")
+                        .HasColumnType("text")
+                        .HasColumnName("ydg_included");
+
+                    b.HasKey("Id")
+                        .HasName("pk_road_archive_records");
+
+                    b.HasIndex("DataSourceId")
+                        .HasDatabaseName("ix_road_archive_records_data_source_id");
+
+                    b.HasIndex("DataSourceId", "SourceRowKey")
+                        .HasDatabaseName("ix_road_archive_records_data_source_id_source_row_key");
+
+                    b.ToTable("road_archive_records", (string)null);
+                });
+
+            modelBuilder.Entity("Ols.ControlCenter.Domain.Entities.Tracking.RoadLoadRecord", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint")
+                        .HasColumnName("id");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
+
+                    b.Property<string>("ArrivalWarehouse")
+                        .HasColumnType("text")
+                        .HasColumnName("arrival_warehouse");
+
+                    b.Property<string>("CustomerRep")
+                        .HasColumnType("text")
+                        .HasColumnName("customer_rep");
+
+                    b.Property<long>("DataSourceId")
+                        .HasColumnType("bigint")
+                        .HasColumnName("data_source_id");
+
+                    b.Property<int>("DelayDays")
+                        .HasColumnType("integer")
+                        .HasColumnName("delay_days");
+
+                    b.Property<string>("DepartureDate")
+                        .HasColumnType("text")
+                        .HasColumnName("departure_date");
+
+                    b.Property<string>("Freight")
+                        .HasColumnType("text")
+                        .HasColumnName("freight");
+
+                    b.Property<string>("ImportCountry")
+                        .HasColumnType("text")
+                        .HasColumnName("import_country");
+
+                    b.Property<DateTimeOffset>("ImportedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("imported_at");
+
+                    b.Property<bool>("IsArchived")
+                        .HasColumnType("boolean")
+                        .HasColumnName("is_archived");
+
+                    b.Property<string>("PackageCount")
+                        .HasColumnType("text")
+                        .HasColumnName("package_count");
+
+                    b.Property<string>("Plate")
+                        .HasColumnType("text")
+                        .HasColumnName("plate");
+
+                    b.Property<string>("ProductType")
+                        .HasColumnType("text")
+                        .HasColumnName("product_type");
+
+                    b.Property<string>("RawJson")
+                        .IsRequired()
+                        .HasColumnType("jsonb")
+                        .HasColumnName("raw_json");
+
+                    b.Property<string>("Receiver")
+                        .HasColumnType("text")
+                        .HasColumnName("receiver");
+
+                    b.Property<string>("RiskLevel")
+                        .IsRequired()
+                        .HasMaxLength(40)
+                        .HasColumnType("character varying(40)")
+                        .HasColumnName("risk_level");
+
+                    b.Property<int>("RowIndex")
+                        .HasColumnType("integer")
+                        .HasColumnName("row_index");
+
+                    b.Property<string>("Sender")
+                        .HasColumnType("text")
+                        .HasColumnName("sender");
+
+                    b.Property<string>("SourceRowKey")
+                        .IsRequired()
+                        .HasMaxLength(120)
+                        .HasColumnType("character varying(120)")
+                        .HasColumnName("source_row_key");
+
+                    b.Property<string>("Stackable")
+                        .HasColumnType("text")
+                        .HasColumnName("stackable");
+
+                    b.Property<string>("StatusText")
+                        .HasColumnType("text")
+                        .HasColumnName("status_text");
+
+                    b.Property<string>("Supplier")
+                        .HasColumnType("text")
+                        .HasColumnName("supplier");
+
+                    b.Property<DateTimeOffset?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at");
+
+                    b.Property<string>("VehicleLocation")
+                        .HasColumnType("text")
+                        .HasColumnName("vehicle_location");
+
+                    b.Property<string>("Weight")
+                        .HasColumnType("text")
+                        .HasColumnName("weight");
+
+                    b.Property<string>("Ydg")
+                        .HasColumnType("text")
+                        .HasColumnName("ydg");
+
+                    b.HasKey("Id")
+                        .HasName("pk_road_load_records");
+
+                    b.HasIndex("DataSourceId")
+                        .HasDatabaseName("ix_road_load_records_data_source_id");
+
+                    b.HasIndex("DataSourceId", "SourceRowKey")
+                        .HasDatabaseName("ix_road_load_records_data_source_id_source_row_key");
+
+                    b.ToTable("road_load_records", (string)null);
+                });
+
+            modelBuilder.Entity("Ols.ControlCenter.Domain.Entities.Tracking.RoadTransitRecord", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint")
+                        .HasColumnName("id");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
+
+                    b.Property<string>("Booking")
+                        .HasColumnType("text")
+                        .HasColumnName("booking");
+
+                    b.Property<string>("Consignee")
+                        .HasColumnType("text")
+                        .HasColumnName("consignee");
+
+                    b.Property<string>("ContainerNo")
+                        .HasColumnType("text")
+                        .HasColumnName("container_no");
+
+                    b.Property<DateOnly?>("CutOff")
+                        .HasColumnType("date")
+                        .HasColumnName("cut_off");
+
+                    b.Property<long>("DataSourceId")
+                        .HasColumnType("bigint")
+                        .HasColumnName("data_source_id");
+
+                    b.Property<DateOnly?>("Date")
+                        .HasColumnType("date")
+                        .HasColumnName("date");
+
+                    b.Property<int>("DelayDays")
+                        .HasColumnType("integer")
+                        .HasColumnName("delay_days");
+
+                    b.Property<string>("EmptyContainerTransfer")
+                        .HasColumnType("text")
+                        .HasColumnName("empty_container_transfer");
+
+                    b.Property<DateOnly?>("Eta")
+                        .HasColumnType("date")
+                        .HasColumnName("eta");
+
+                    b.Property<DateTimeOffset>("ImportedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("imported_at");
+
+                    b.Property<string>("Invoice")
+                        .HasColumnType("text")
+                        .HasColumnName("invoice");
+
+                    b.Property<bool>("IsArchived")
+                        .HasColumnType("boolean")
+                        .HasColumnName("is_archived");
+
+                    b.Property<string>("Line")
+                        .HasColumnType("text")
+                        .HasColumnName("line");
+
+                    b.Property<string>("Note")
+                        .HasColumnType("text")
+                        .HasColumnName("note");
+
+                    b.Property<string>("Note2")
+                        .HasColumnType("text")
+                        .HasColumnName("note2");
+
+                    b.Property<string>("OriginCountry")
+                        .HasColumnType("text")
+                        .HasColumnName("origin_country");
+
+                    b.Property<string>("Plate")
+                        .HasColumnType("text")
+                        .HasColumnName("plate");
+
+                    b.Property<string>("Pod")
+                        .HasColumnType("text")
+                        .HasColumnName("pod");
+
+                    b.Property<string>("Pol")
+                        .HasColumnType("text")
+                        .HasColumnName("pol");
+
+                    b.Property<string>("RawJson")
+                        .IsRequired()
+                        .HasColumnType("jsonb")
+                        .HasColumnName("raw_json");
+
+                    b.Property<string>("RiskLevel")
+                        .IsRequired()
+                        .HasMaxLength(40)
+                        .HasColumnType("character varying(40)")
+                        .HasColumnName("risk_level");
+
+                    b.Property<int>("RowIndex")
+                        .HasColumnType("integer")
+                        .HasColumnName("row_index");
+
+                    b.Property<string>("Shipper")
+                        .HasColumnType("text")
+                        .HasColumnName("shipper");
+
+                    b.Property<string>("SourceRowKey")
+                        .IsRequired()
+                        .HasMaxLength(120)
+                        .HasColumnType("character varying(120)")
+                        .HasColumnName("source_row_key");
+
+                    b.Property<string>("StatusText")
+                        .HasColumnType("text")
+                        .HasColumnName("status_text");
+
+                    b.Property<string>("Term")
+                        .HasColumnType("text")
+                        .HasColumnName("term");
+
+                    b.Property<DateTimeOffset?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at");
+
+                    b.HasKey("Id")
+                        .HasName("pk_road_transit_records");
+
+                    b.HasIndex("DataSourceId")
+                        .HasDatabaseName("ix_road_transit_records_data_source_id");
+
+                    b.HasIndex("DataSourceId", "SourceRowKey")
+                        .HasDatabaseName("ix_road_transit_records_data_source_id_source_row_key");
+
+                    b.ToTable("road_transit_records", (string)null);
+                });
+
+            modelBuilder.Entity("Ols.ControlCenter.Domain.Entities.Tracking.SeaExportRecord", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint")
+                        .HasColumnName("id");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
+
+                    b.Property<string>("Booking")
+                        .HasColumnType("text")
+                        .HasColumnName("booking");
+
+                    b.Property<string>("Consignee")
+                        .HasColumnType("text")
+                        .HasColumnName("consignee");
+
+                    b.Property<string>("ContainerKind")
+                        .HasColumnType("text")
+                        .HasColumnName("container_kind");
+
+                    b.Property<string>("ContainerNo")
+                        .HasColumnType("text")
+                        .HasColumnName("container_no");
+
+                    b.Property<DateOnly?>("CutOff")
+                        .HasColumnType("date")
+                        .HasColumnName("cut_off");
+
+                    b.Property<long>("DataSourceId")
+                        .HasColumnType("bigint")
+                        .HasColumnName("data_source_id");
+
+                    b.Property<int>("DelayDays")
+                        .HasColumnType("integer")
+                        .HasColumnName("delay_days");
+
+                    b.Property<DateOnly?>("Eta")
+                        .HasColumnType("date")
+                        .HasColumnName("eta");
+
+                    b.Property<DateOnly?>("Etd")
+                        .HasColumnType("date")
+                        .HasColumnName("etd");
+
+                    b.Property<DateTimeOffset>("ImportedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("imported_at");
+
+                    b.Property<string>("Invoice")
+                        .HasColumnType("text")
+                        .HasColumnName("invoice");
+
+                    b.Property<bool>("IsArchived")
+                        .HasColumnType("boolean")
+                        .HasColumnName("is_archived");
+
+                    b.Property<string>("Line")
+                        .HasColumnType("text")
+                        .HasColumnName("line");
+
+                    b.Property<string>("Note")
+                        .HasColumnType("text")
+                        .HasColumnName("note");
+
+                    b.Property<string>("Note2")
+                        .HasColumnType("text")
+                        .HasColumnName("note2");
+
+                    b.Property<string>("Pod")
+                        .HasColumnType("text")
+                        .HasColumnName("pod");
+
+                    b.Property<string>("Pol")
+                        .HasColumnType("text")
+                        .HasColumnName("pol");
+
+                    b.Property<string>("RawJson")
+                        .IsRequired()
+                        .HasColumnType("jsonb")
+                        .HasColumnName("raw_json");
+
+                    b.Property<string>("RiskLevel")
+                        .IsRequired()
+                        .HasMaxLength(40)
+                        .HasColumnType("character varying(40)")
+                        .HasColumnName("risk_level");
+
+                    b.Property<int>("RowIndex")
+                        .HasColumnType("integer")
+                        .HasColumnName("row_index");
+
+                    b.Property<string>("Shipper")
+                        .HasColumnType("text")
+                        .HasColumnName("shipper");
+
+                    b.Property<string>("SourceRowKey")
+                        .IsRequired()
+                        .HasMaxLength(120)
+                        .HasColumnType("character varying(120)")
+                        .HasColumnName("source_row_key");
+
+                    b.Property<string>("StatusText")
+                        .HasColumnType("text")
+                        .HasColumnName("status_text");
+
+                    b.Property<string>("Term")
+                        .HasColumnType("text")
+                        .HasColumnName("term");
+
+                    b.Property<DateTimeOffset?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at");
+
+                    b.HasKey("Id")
+                        .HasName("pk_sea_export_records");
+
+                    b.HasIndex("DataSourceId")
+                        .HasDatabaseName("ix_sea_export_records_data_source_id");
+
+                    b.HasIndex("DataSourceId", "SourceRowKey")
+                        .HasDatabaseName("ix_sea_export_records_data_source_id_source_row_key");
+
+                    b.ToTable("sea_export_records", (string)null);
+                });
+
+            modelBuilder.Entity("Ols.ControlCenter.Domain.Entities.Tracking.SeaImportRecord", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint")
+                        .HasColumnName("id");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
+
+                    b.Property<string>("Agent")
+                        .HasColumnType("text")
+                        .HasColumnName("agent");
+
+                    b.Property<string>("AgentRef")
+                        .HasColumnType("text")
+                        .HasColumnName("agent_ref");
+
+                    b.Property<string>("Booking")
+                        .HasColumnType("text")
+                        .HasColumnName("booking");
+
+                    b.Property<string>("Consignee")
+                        .HasColumnType("text")
+                        .HasColumnName("consignee");
+
+                    b.Property<string>("ContainerKind")
+                        .HasColumnType("text")
+                        .HasColumnName("container_kind");
+
+                    b.Property<string>("ContainerNo")
+                        .HasColumnType("text")
+                        .HasColumnName("container_no");
+
+                    b.Property<long>("DataSourceId")
+                        .HasColumnType("bigint")
+                        .HasColumnName("data_source_id");
+
+                    b.Property<int>("DelayDays")
+                        .HasColumnType("integer")
+                        .HasColumnName("delay_days");
+
+                    b.Property<DateOnly?>("Eta")
+                        .HasColumnType("date")
+                        .HasColumnName("eta");
+
+                    b.Property<DateOnly?>("Etd")
+                        .HasColumnType("date")
+                        .HasColumnName("etd");
+
+                    b.Property<DateTimeOffset>("ImportedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("imported_at");
+
+                    b.Property<string>("Invoice")
+                        .HasColumnType("text")
+                        .HasColumnName("invoice");
+
+                    b.Property<bool>("IsArchived")
+                        .HasColumnType("boolean")
+                        .HasColumnName("is_archived");
+
+                    b.Property<string>("Line")
+                        .HasColumnType("text")
+                        .HasColumnName("line");
+
+                    b.Property<string>("Note")
+                        .HasColumnType("text")
+                        .HasColumnName("note");
+
+                    b.Property<string>("Note2")
+                        .HasColumnType("text")
+                        .HasColumnName("note2");
+
+                    b.Property<string>("Pod")
+                        .HasColumnType("text")
+                        .HasColumnName("pod");
+
+                    b.Property<string>("Pol")
+                        .HasColumnType("text")
+                        .HasColumnName("pol");
+
+                    b.Property<string>("RawJson")
+                        .IsRequired()
+                        .HasColumnType("jsonb")
+                        .HasColumnName("raw_json");
+
+                    b.Property<string>("RiskLevel")
+                        .IsRequired()
+                        .HasMaxLength(40)
+                        .HasColumnType("character varying(40)")
+                        .HasColumnName("risk_level");
+
+                    b.Property<int>("RowIndex")
+                        .HasColumnType("integer")
+                        .HasColumnName("row_index");
+
+                    b.Property<string>("Shipper")
+                        .HasColumnType("text")
+                        .HasColumnName("shipper");
+
+                    b.Property<string>("SourceRowKey")
+                        .IsRequired()
+                        .HasMaxLength(120)
+                        .HasColumnType("character varying(120)")
+                        .HasColumnName("source_row_key");
+
+                    b.Property<string>("StatusText")
+                        .HasColumnType("text")
+                        .HasColumnName("status_text");
+
+                    b.Property<string>("Term")
+                        .HasColumnType("text")
+                        .HasColumnName("term");
+
+                    b.Property<DateTimeOffset?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at");
+
+                    b.HasKey("Id")
+                        .HasName("pk_sea_import_records");
+
+                    b.HasIndex("DataSourceId")
+                        .HasDatabaseName("ix_sea_import_records_data_source_id");
+
+                    b.HasIndex("DataSourceId", "SourceRowKey")
+                        .HasDatabaseName("ix_sea_import_records_data_source_id_source_row_key");
+
+                    b.ToTable("sea_import_records", (string)null);
+                });
+
+            modelBuilder.Entity("Ols.ControlCenter.Domain.Entities.Tracking.SeaTransitRecord", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint")
+                        .HasColumnName("id");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
+
+                    b.Property<string>("Agent")
+                        .HasColumnType("text")
+                        .HasColumnName("agent");
+
+                    b.Property<string>("AgentRef")
+                        .HasColumnType("text")
+                        .HasColumnName("agent_ref");
+
+                    b.Property<string>("Consignee")
+                        .HasColumnType("text")
+                        .HasColumnName("consignee");
+
+                    b.Property<string>("ContainerKind")
+                        .HasColumnType("text")
+                        .HasColumnName("container_kind");
+
+                    b.Property<string>("ContainerNo")
+                        .HasColumnType("text")
+                        .HasColumnName("container_no");
+
+                    b.Property<DateOnly?>("CutOff")
+                        .HasColumnType("date")
+                        .HasColumnName("cut_off");
+
+                    b.Property<long>("DataSourceId")
+                        .HasColumnType("bigint")
+                        .HasColumnName("data_source_id");
+
+                    b.Property<int>("DelayDays")
+                        .HasColumnType("integer")
+                        .HasColumnName("delay_days");
+
+                    b.Property<string>("EmptyContainerTransfer")
+                        .HasColumnType("text")
+                        .HasColumnName("empty_container_transfer");
+
+                    b.Property<string>("ExportBooking")
+                        .HasColumnType("text")
+                        .HasColumnName("export_booking");
+
+                    b.Property<DateOnly?>("ExportEta")
+                        .HasColumnType("date")
+                        .HasColumnName("export_eta");
+
+                    b.Property<DateOnly?>("ExportEtd")
+                        .HasColumnType("date")
+                        .HasColumnName("export_etd");
+
+                    b.Property<string>("ImportBooking")
+                        .HasColumnType("text")
+                        .HasColumnName("import_booking");
+
+                    b.Property<DateOnly?>("ImportEta")
+                        .HasColumnType("date")
+                        .HasColumnName("import_eta");
+
+                    b.Property<DateOnly?>("ImportEtd")
+                        .HasColumnType("date")
+                        .HasColumnName("import_etd");
+
+                    b.Property<DateTimeOffset>("ImportedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("imported_at");
+
+                    b.Property<string>("IncomingContainer")
+                        .HasColumnType("text")
+                        .HasColumnName("incoming_container");
+
+                    b.Property<string>("Invoice")
+                        .HasColumnType("text")
+                        .HasColumnName("invoice");
+
+                    b.Property<bool>("IsArchived")
+                        .HasColumnType("boolean")
+                        .HasColumnName("is_archived");
+
+                    b.Property<string>("Line")
+                        .HasColumnType("text")
+                        .HasColumnName("line");
+
+                    b.Property<string>("Note")
+                        .HasColumnType("text")
+                        .HasColumnName("note");
+
+                    b.Property<string>("Note2")
+                        .HasColumnType("text")
+                        .HasColumnName("note2");
+
+                    b.Property<string>("Pod")
+                        .HasColumnType("text")
+                        .HasColumnName("pod");
+
+                    b.Property<string>("Pol")
+                        .HasColumnType("text")
+                        .HasColumnName("pol");
+
+                    b.Property<string>("RawJson")
+                        .IsRequired()
+                        .HasColumnType("jsonb")
+                        .HasColumnName("raw_json");
+
+                    b.Property<string>("RiskLevel")
+                        .IsRequired()
+                        .HasMaxLength(40)
+                        .HasColumnType("character varying(40)")
+                        .HasColumnName("risk_level");
+
+                    b.Property<int>("RowIndex")
+                        .HasColumnType("integer")
+                        .HasColumnName("row_index");
+
+                    b.Property<string>("Shipper")
+                        .HasColumnType("text")
+                        .HasColumnName("shipper");
+
+                    b.Property<string>("SourceRowKey")
+                        .IsRequired()
+                        .HasMaxLength(120)
+                        .HasColumnType("character varying(120)")
+                        .HasColumnName("source_row_key");
+
+                    b.Property<string>("StatusText")
+                        .HasColumnType("text")
+                        .HasColumnName("status_text");
+
+                    b.Property<string>("Term")
+                        .HasColumnType("text")
+                        .HasColumnName("term");
+
+                    b.Property<string>("TransferPoint")
+                        .HasColumnType("text")
+                        .HasColumnName("transfer_point");
+
+                    b.Property<DateTimeOffset?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at");
+
+                    b.HasKey("Id")
+                        .HasName("pk_sea_transit_records");
+
+                    b.HasIndex("DataSourceId")
+                        .HasDatabaseName("ix_sea_transit_records_data_source_id");
+
+                    b.HasIndex("DataSourceId", "SourceRowKey")
+                        .HasDatabaseName("ix_sea_transit_records_data_source_id_source_row_key");
+
+                    b.ToTable("sea_transit_records", (string)null);
+                });
+
             modelBuilder.Entity("Ols.ControlCenter.Domain.Entities.User", b =>
                 {
                     b.Property<long>("Id")
@@ -1784,7 +3146,6 @@ namespace Ols.ControlCenter.Infrastructure.Persistence.Migrations
                         .WithMany("Alerts")
                         .HasForeignKey("OperationId")
                         .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired()
                         .HasConstraintName("fk_alerts_operations_operation_id");
 
                     b.HasOne("Ols.ControlCenter.Domain.Entities.User", "ResponsibleUser")
@@ -1811,7 +3172,6 @@ namespace Ols.ControlCenter.Infrastructure.Persistence.Migrations
                         .WithMany("Comments")
                         .HasForeignKey("OperationId")
                         .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired()
                         .HasConstraintName("fk_comments_operations_operation_id");
 
                     b.Navigation("Author");
@@ -1864,6 +3224,16 @@ namespace Ols.ControlCenter.Infrastructure.Persistence.Migrations
                         .HasConstraintName("fk_documents_operations_operation_id");
 
                     b.Navigation("Operation");
+                });
+
+            modelBuilder.Entity("Ols.ControlCenter.Domain.Entities.ImportedRawRow", b =>
+                {
+                    b.HasOne("Ols.ControlCenter.Domain.Entities.DataSource", null)
+                        .WithMany()
+                        .HasForeignKey("DataSourceId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_imported_raw_rows_data_sources_data_source_id");
                 });
 
             modelBuilder.Entity("Ols.ControlCenter.Domain.Entities.Notification", b =>

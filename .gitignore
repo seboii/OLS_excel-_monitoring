@@ -36,6 +36,10 @@ secrets.json
 *.pfx
 *.key
 
+## Yerel asistan/araç dosyaları — paylaşılmaz
+.claude/
+CLAUDE.md
+
 ## Loglar
 logs/
 *.log

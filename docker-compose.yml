@@ -4,16 +4,16 @@ services:
     container_name: ols-postgres
     restart: unless-stopped
     environment:
-      POSTGRES_USER: ols
-      POSTGRES_PASSWORD: ols_dev_password
-      POSTGRES_DB: ols_control_center
+      POSTGRES_USER: ${POSTGRES_USER:-ols}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-ols_dev_password}
+      POSTGRES_DB: ${POSTGRES_DB:-ols_control_center}
       TZ: Europe/Istanbul
     ports:
       - "5432:5432"
     volumes:
       - ols_pgdata:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ols -d ols_control_center"]
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-ols} -d ${POSTGRES_DB:-ols_control_center}"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -33,7 +33,62 @@ services:
       timeout: 5s
       retries: 5
 
-  # İsteğe bağlı: tarayıcıdan veritabanı yönetimi (docker compose --profile tools up)
+  # ───────────── Uygulama servisleri (profil: app) ─────────────
+  api:
+    build:
+      context: .
+      dockerfile: src/Ols.ControlCenter.Api/Dockerfile
+    container_name: ols-api
+    restart: unless-stopped
+    profiles: ["app"]
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    environment:
+      ASPNETCORE_ENVIRONMENT: Production
+      ConnectionStrings__Default: "Host=postgres;Port=5432;Database=${POSTGRES_DB:-ols_control_center};Username=${POSTGRES_USER:-ols};Password=${POSTGRES_PASSWORD:-ols_dev_password}"
+      ConnectionStrings__Redis: "redis:6379"
+      Jwt__Secret: ${JWT__Secret:-yerel-gecici-anahtar-en-az-32-karakter-0123456789}
+      Jwt__Issuer: ${JWT__Issuer:-ols-control-center}
+      Jwt__Audience: ${JWT__Audience:-ols-control-center}
+      Seed__AdminEmail: ${SEED__AdminEmail:-admin@ols.local}
+      Seed__AdminPassword: ${SEED__AdminPassword:-Admin123!}
+      Encryption__Key: ${ENCRYPTION__Key:-}
+    ports:
+      - "${API_PORT:-5080}:8080"
+
+  worker:
+    build:
+      context: .
+      dockerfile: src/Ols.ControlCenter.Worker/Dockerfile
+    container_name: ols-worker
+    restart: unless-stopped
+    profiles: ["app"]
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    environment:
+      DOTNET_ENVIRONMENT: Production
+      ConnectionStrings__Default: "Host=postgres;Port=5432;Database=${POSTGRES_DB:-ols_control_center};Username=${POSTGRES_USER:-ols};Password=${POSTGRES_PASSWORD:-ols_dev_password}"
+      ConnectionStrings__Redis: "redis:6379"
+
+  web:
+    build:
+      context: ./web
+      dockerfile: Dockerfile
+    container_name: ols-web
+    restart: unless-stopped
+    profiles: ["app"]
+    depends_on:
+      - api
+    ports:
+      - "${WEB_PORT:-8088}:80"
+
+  # ───────────── Yardımcı: pgAdmin (profil: tools) ─────────────
   pgadmin:
     image: dpage/pgadmin4:latest
     container_name: ols-pgadmin

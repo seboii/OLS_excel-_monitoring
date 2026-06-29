@@ -19,4 +19,7 @@ public class DataSyncLog : BaseEntity
 
     public string? Message { get; set; }
     public long? DurationMs { get; set; }
+
+    public string? FileName { get; set; }
+    public string? SheetName { get; set; }
 }

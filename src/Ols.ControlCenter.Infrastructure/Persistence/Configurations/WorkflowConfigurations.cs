@@ -9,6 +9,10 @@ public sealed class CommentConfiguration : IEntityTypeConfiguration<Comment>
     public void Configure(EntityTypeBuilder<Comment> b)
     {
         b.Property(x => x.Body).IsRequired().HasMaxLength(4000);
+        b.Property(x => x.BoardKey).HasMaxLength(60);
+        b.Property(x => x.BoardTitle).HasMaxLength(120);
+        b.Property(x => x.Group).HasMaxLength(40);
+        b.Property(x => x.RecordRef).HasMaxLength(120);
 
         b.Property(x => x.Mentions)
             .HasColumnType("jsonb")
@@ -25,6 +29,7 @@ public sealed class CommentConfiguration : IEntityTypeConfiguration<Comment>
             .OnDelete(DeleteBehavior.Restrict);
 
         b.HasIndex(x => new { x.OperationId, x.CreatedAt });
+        b.HasIndex(x => new { x.BoardKey, x.RecordRef, x.CreatedAt });
     }
 }
 
@@ -64,6 +69,10 @@ public sealed class AlertConfiguration : IEntityTypeConfiguration<Alert>
         b.Property(x => x.RuleCode).IsRequired().HasMaxLength(40);
         b.Property(x => x.DedupeKey).IsRequired().HasMaxLength(120);
         b.Property(x => x.ResolutionNote).HasMaxLength(1000);
+        b.Property(x => x.BoardKey).HasMaxLength(60);
+        b.Property(x => x.BoardTitle).HasMaxLength(120);
+        b.Property(x => x.Group).HasMaxLength(40);
+        b.Property(x => x.RecordRef).HasMaxLength(120);
 
         b.HasOne(x => x.Operation)
             .WithMany(o => o.Alerts)
@@ -75,10 +84,11 @@ public sealed class AlertConfiguration : IEntityTypeConfiguration<Alert>
             .HasForeignKey(x => x.ResponsibleUserId)
             .OnDelete(DeleteBehavior.SetNull);
 
-        // Aynı operasyon + kural için tek satır (tekrar tetiklenince güncellenir)
+        // Aynı kaynak (operasyon veya board satırı) + kural için tek satır (tekrar tetiklenince güncellenir)
         b.HasIndex(x => x.DedupeKey).IsUnique();
         b.HasIndex(x => new { x.Status, x.RiskLevel });
         b.HasIndex(x => x.Type);
+        b.HasIndex(x => x.BoardKey);
     }
 }
 

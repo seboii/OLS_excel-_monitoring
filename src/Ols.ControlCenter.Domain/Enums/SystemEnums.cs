@@ -12,6 +12,14 @@ public enum DataSourceType
     Csv
 }
 
+/// <summary>Veri kaynağına erişim biçimi.</summary>
+public enum DataSourceAccessType
+{
+    Public,
+    Private,
+    Upload
+}
+
 /// <summary>Bir senkronizasyon çalışmasının sonucu.</summary>
 public enum SyncStatus
 {

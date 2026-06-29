@@ -68,6 +68,19 @@ export const tradeDirectionLabels: Record<string, string> = {
   Transit: 'Transit',
 }
 
+export const delayReasonLabels: Record<string, string> = {
+  None: '—',
+  VehicleLate: 'Araç Geç Geldi',
+  LoadingDelay: 'Yükleme Gecikti',
+  MissingDocuments: 'Evrak Eksik',
+  CustomsHold: 'Gümrük Bekliyor',
+  BorderCongestion: 'Sınır Yoğunluğu',
+  CustomerCaused: 'Müşteri Kaynaklı',
+  CarrierCaused: 'Taşıyıcı Kaynaklı',
+  FinancialApprovalPending: 'Finansal Onay Bekleniyor',
+  Other: 'Diğer',
+}
+
 /** Risk seviyesi → Tailwind sınıfları (rozet için). */
 export const riskLevelClasses: Record<string, string> = {
   Green: 'bg-emerald-100 text-emerald-700 ring-emerald-600/20',

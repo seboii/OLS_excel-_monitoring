@@ -1,5 +1,4 @@
-using Microsoft.EntityFrameworkCore;
-using Ols.ControlCenter.Application.Abstractions.Persistence;
+using Ols.ControlCenter.Application.Features.Boards;
 using Ols.ControlCenter.Domain.Enums;
 
 namespace Ols.ControlCenter.Application.Features.Dashboard;
@@ -9,62 +8,60 @@ public interface IDashboardQueryService
     Task<DashboardSummaryDto> GetSummaryAsync(CancellationToken ct);
 }
 
+/// <summary>
+/// Dashboard özetini operasyonel takip tablolarından (Deniz/Kara/Hava — Finans/Alabora hariç, o
+/// kendi tahsilat sayfasında ayrı metriklerle gösterilir) toplar. "Güncel" = arşiv olmayan VE durum
+/// metni teslim/tamamlanma içermeyen satır (<see cref="TrackingPhase.IsCompleted"/>); "Tamamlanan"
+/// = arşiv olmayan ama teslim/tamamlanmış; "Arşiv" = kaynağın kendi arşiv sayfasından gelen satırlar.
+/// Risk/gecikme yalnızca güncel satırlardan hesaplanır (tamamlanmış işin riski dashboard'u şişirmez).
+/// </summary>
 public sealed class DashboardQueryService : IDashboardQueryService
 {
-    private readonly IApplicationDbContext _db;
+    private readonly ITrackingMetricsService _metrics;
 
-    public DashboardQueryService(IApplicationDbContext db) => _db = db;
-
-    private sealed record Row(
-        OperationStatus Status, RiskLevel Risk, TransportType Transport, DocumentStatus DocStatus,
-        DateOnly? LoadingDate, DateOnly? PlannedDeliveryDate, DateOnly? DeliveryDate,
-        int DelayDays, DateTimeOffset CreatedAt, string DepartmentName, bool CustomerCritical);
+    public DashboardQueryService(ITrackingMetricsService metrics) => _metrics = metrics;
 
     public async Task<DashboardSummaryDto> GetSummaryAsync(CancellationToken ct)
     {
-        var now = DateTimeOffset.UtcNow;
-        var today = DateOnly.FromDateTime(DateTime.UtcNow);
+        var all = await _metrics.LoadRowsAsync(ct);
+        var rows = all.Where(r => BoardCatalog.OperationalGroups.Contains(r.Group)).ToList();
 
-        var rows = await _db.Operations.AsNoTracking()
-            .Select(o => new Row(
-                o.Status, o.RiskLevel, o.TransportType, o.DocumentStatus,
-                o.LoadingDate, o.PlannedDeliveryDate, o.DeliveryDate, o.DelayDays, o.CreatedAt,
-                o.Department != null ? o.Department.Name : "Atanmamış",
-                o.Customer != null && o.Customer.IsCritical))
-            .ToListAsync(ct);
-
-        static bool Active(Row r) => r.Status != OperationStatus.Completed && r.Status != OperationStatus.Cancelled;
+        var notArchived = rows.Where(r => !r.Archived).ToList();
+        var current = notArchived.Where(r => !TrackingPhase.IsCompleted(r.Status)).ToList();
+        var completed = notArchived.Where(r => TrackingPhase.IsCompleted(r.Status)).ToList();
+        var archived = rows.Where(r => r.Archived).ToList();
 
         var kpis = new DashboardKpis(
-            TotalActive: rows.Count(Active),
-            TodayLoading: rows.Count(r => r.LoadingDate == today),
-            TodayDelivery: rows.Count(r => r.PlannedDeliveryDate == today || r.DeliveryDate == today),
-            Delayed: rows.Count(r => r.DelayDays > 0),
-            Risky: rows.Count(r => r.Risk >= RiskLevel.Orange),
-            MissingDocuments: rows.Count(r => r.DocStatus == DocumentStatus.Missing || r.Status == OperationStatus.MissingDocuments),
-            Completed: rows.Count(r => r.Status == OperationStatus.Completed),
-            New24h: rows.Count(r => r.CreatedAt >= now.AddHours(-24)),
-            AvgDelayDays: Math.Round(rows.Where(r => r.DelayDays > 0).Select(r => (double)r.DelayDays).DefaultIfEmpty(0).Average(), 1),
-            CriticalCustomerOps: rows.Count(r => r.CustomerCritical && Active(r)),
-            TotalOperations: rows.Count);
+            TotalRecords: rows.Count,
+            Current: current.Count,
+            Completed: completed.Count,
+            Archived: archived.Count,
+            Delayed: current.Count(r => r.Delay > 0),
+            Risky: current.Count(r => r.Risk >= RiskLevel.Orange),
+            Critical: current.Count(r => r.Risk >= RiskLevel.Red),
+            AvgDelayDays: Math.Round(current.Where(r => r.Delay > 0).Select(r => (double)r.Delay).DefaultIfEmpty(0).Average(), 1),
+            Boards: BoardCatalog.All.Count(b => BoardCatalog.OperationalGroups.Contains(b.Group)));
 
-        var status = rows.GroupBy(r => r.Status)
-            .Select(g => new NameValue(g.Key.ToString(), g.Count())).OrderByDescending(x => x.Value).ToList();
-        var transport = rows.GroupBy(r => r.Transport)
+        var risk = current.GroupBy(r => r.Risk)
+            .OrderBy(g => g.Key)
             .Select(g => new NameValue(g.Key.ToString(), g.Count())).ToList();
-        var risk = rows.GroupBy(r => r.Risk)
-            .Select(g => new NameValue(g.Key.ToString(), g.Count())).OrderBy(x => x.Name).ToList();
-        var dept = rows.Where(Active).GroupBy(r => r.DepartmentName)
-            .Select(g => new NameValue(g.Key, g.Count())).OrderByDescending(x => x.Value).ToList();
 
-        var recentRaw = await _db.Operations.AsNoTracking()
-            .OrderByDescending(o => o.CreatedAt).Take(10)
-            .Select(o => new { o.Id, o.SourceOperationNo, o.CustomerName, o.Status, o.CreatedAt })
-            .ToListAsync(ct);
-        var recent = recentRaw
-            .Select(o => new RecentActivityDto(o.Id, o.SourceOperationNo, o.CustomerName, o.Status.ToString(), o.CreatedAt))
+        var group = BoardCatalog.OperationalGroups
+            .Select(gr => new NameValue(gr, current.Count(r => r.Group == gr)))
             .ToList();
 
-        return new DashboardSummaryDto(kpis, status, transport, risk, dept, recent);
+        var boardLoad = current.GroupBy(r => r.BoardTitle)
+            .Select(g => new NameValue(g.Key, g.Count()))
+            .OrderByDescending(x => x.Value).ToList();
+
+        var attention = current
+            .Where(r => r.Risk >= RiskLevel.Yellow || r.Delay > 0)
+            .OrderByDescending(r => (int)r.Risk).ThenByDescending(r => r.Delay)
+            .Take(15)
+            .Select(r => new AttentionItemDto(
+                r.BoardKey, r.BoardTitle, r.Group, r.Ref, r.Risk.ToString(), r.Delay, r.Status))
+            .ToList();
+
+        return new DashboardSummaryDto(kpis, risk, group, boardLoad, attention);
     }
 }

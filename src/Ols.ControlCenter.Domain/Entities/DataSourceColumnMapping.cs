@@ -17,8 +17,17 @@ public class DataSourceColumnMapping : BaseEntity
     /// <summary>Operations modelindeki hedef alan adı.</summary>
     public string TargetField { get; set; } = string.Empty;
 
+    /// <summary>Kaynak kolonun 0-tabanlı index'i (başlık adı boşsa kullanılır).</summary>
+    public int? SourceColumnIndex { get; set; }
+
     /// <summary>İsteğe bağlı dönüşüm ipucu (tarih formatı, "status-map" vb.).</summary>
     public string? Transform { get; set; }
+
+    /// <summary>Dönüşüm tipi (date, decimal, status, enum...).</summary>
+    public string? TransformType { get; set; }
+
+    /// <summary>Kaynak değer boşsa kullanılacak varsayılan değer.</summary>
+    public string? DefaultValue { get; set; }
 
     public bool IsRequired { get; set; }
 }

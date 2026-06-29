@@ -4,13 +4,25 @@ using Ols.ControlCenter.Domain.Enums;
 namespace Ols.ControlCenter.Domain.Entities;
 
 /// <summary>
-/// Risk motorunun ürettiği (veya manuel) uyarı. <see cref="DedupeKey"/> aynı operasyon+kural için
+/// Risk motorunun ürettiği (veya manuel) uyarı. <see cref="DedupeKey"/> aynı kaynak+kural için
 /// mükerrer uyarı oluşmasını engeller; tekrar tetiklenince güncellenir.
+/// İki kaynaktan biri doludur: eski <see cref="Operation"/> modeli (demo veri) VEYA bir takip
+/// tablosu satırı (<see cref="BoardKey"/>+<see cref="RecordRef"/> — gerçek operasyon verisi).
 /// </summary>
 public class Alert : AuditableEntity
 {
-    public long OperationId { get; set; }
-    public Operation Operation { get; set; } = null!;
+    public long? OperationId { get; set; }
+    public Operation? Operation { get; set; }
+
+    /// <summary>Takip tablosu sekme anahtarı (örn. "deniz-transit"). Board-bound uyarılarda dolu.</summary>
+    public string? BoardKey { get; set; }
+    public string? BoardTitle { get; set; }
+
+    /// <summary>Taşıma grubu (Deniz/Kara/Hava/Finans). Board-bound uyarılarda dolu.</summary>
+    public string? Group { get; set; }
+
+    /// <summary>Kaynak satırın dosya/ref numarası. Board-bound uyarılarda dolu.</summary>
+    public string? RecordRef { get; set; }
 
     public AlertType Type { get; set; }
     public RiskLevel RiskLevel { get; set; }

@@ -18,7 +18,19 @@ public class DataSource : AuditableEntity, ISoftDelete
     /// <summary>Bu kaynaktan gelen operasyonlar için varsayılan taşıma tipi.</summary>
     public TransportType? DefaultTransportType { get; set; }
 
-    /// <summary>AES ile şifrelenmiş bağlantı bilgisi (link, token, sheet id...). Asla düz metin saklanmaz.</summary>
+    /// <summary>
+    /// Bu kaynağın beslediği takip tablosu (sayfa = sekme). <see cref="TrackingBoardType.None"/> ise
+    /// klasik <c>Operations</c> modeline yazılır; aksi halde ilgili sayfa-tablosuna upsert edilir.
+    /// </summary>
+    public TrackingBoardType TargetBoard { get; set; } = TrackingBoardType.None;
+
+    /// <summary>Erişim biçimi: public link, private (token) veya manuel upload.</summary>
+    public DataSourceAccessType AccessType { get; set; } = DataSourceAccessType.Public;
+
+    /// <summary>Public kaynak linki (Yandex/SharePoint). Yalnızca backend indirir; gizli değildir.</summary>
+    public string? Url { get; set; }
+
+    /// <summary>AES ile şifrelenmiş bağlantı bilgisi (private token vb.). Asla düz metin saklanmaz.</summary>
     public string ConnectionConfigEncrypted { get; set; } = string.Empty;
 
     public string? SheetName { get; set; }
@@ -27,6 +39,7 @@ public class DataSource : AuditableEntity, ISoftDelete
     public bool IsActive { get; set; } = true;
 
     public DateTimeOffset? LastSyncAt { get; set; }
+    public DateTimeOffset? LastSuccessSyncAt { get; set; }
     public SyncStatus? LastSyncStatus { get; set; }
     public string? LastSyncError { get; set; }
 

@@ -26,17 +26,15 @@ export interface PagedResult<T> {
 }
 
 export interface DashboardKpis {
-  totalActive: number
-  todayLoading: number
-  todayDelivery: number
+  totalRecords: number
+  current: number
+  completed: number
+  archived: number
   delayed: number
   risky: number
-  missingDocuments: number
-  completed: number
-  new24h: number
+  critical: number
   avgDelayDays: number
-  criticalCustomerOps: number
-  totalOperations: number
+  boards: number
 }
 
 export interface NameValue {
@@ -44,21 +42,22 @@ export interface NameValue {
   value: number
 }
 
-export interface RecentActivity {
-  operationId: number
-  operationNo?: string
-  customerName: string
-  status: string
-  at: string
+export interface AttentionItem {
+  boardKey: string
+  boardTitle: string
+  group: string
+  ref: string
+  risk: string
+  delayDays: number
+  status?: string
 }
 
 export interface DashboardSummary {
   kpis: DashboardKpis
-  statusDistribution: NameValue[]
-  transportDistribution: NameValue[]
   riskDistribution: NameValue[]
-  departmentLoad: NameValue[]
-  recent: RecentActivity[]
+  groupDistribution: NameValue[]
+  boardLoad: NameValue[]
+  attention: AttentionItem[]
 }
 
 export interface OperationListItem {

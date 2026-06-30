@@ -1,10 +1,11 @@
 import { NavLink } from 'react-router-dom'
 import {
-  LayoutDashboard, Activity, Truck, Ship, Plane, Wallet, FileCheck,
-  Users, Bell, ShieldAlert, BarChart3, FileBarChart, MessagesSquare,
-  Database, Settings, MonitorPlay,
+  LayoutDashboard, Activity, Truck, Ship, Plane, Wallet,
+  Bell, ShieldAlert, BarChart3, FileBarChart, MessagesSquare,
+  Database, Settings, MonitorPlay, UserCog,
 } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
+import { useAuth } from '@/store/auth'
 import { cn } from '@/lib/utils'
 
 interface MenuItem {
@@ -12,6 +13,8 @@ interface MenuItem {
   label: string
   icon: LucideIcon
   end?: boolean
+  /** Tanımlıysa, yalnızca bu rollerden birine sahip kullanıcılar görür. */
+  roles?: string[]
 }
 
 const groups: { title: string; items: MenuItem[] }[] = [
@@ -29,13 +32,11 @@ const groups: { title: string; items: MenuItem[] }[] = [
       { to: '/deniz', label: 'Deniz', icon: Ship },
       { to: '/hava', label: 'Hava', icon: Plane },
       { to: '/finans', label: 'Finans ve Tahsilatlar', icon: Wallet },
-      { to: '/gumruk', label: 'Gümrük ve Evrak', icon: FileCheck },
     ],
   },
   {
     title: 'Takip & Analiz',
     items: [
-      { to: '/musteri', label: 'Müşteri ve Bildirim', icon: Users },
       { to: '/uyarilar', label: 'Uyarılar ve Görevler', icon: Bell },
       { to: '/risk', label: 'Risk Haritası', icon: ShieldAlert },
       { to: '/kpi', label: 'KPI ve Performans', icon: BarChart3 },
@@ -46,7 +47,8 @@ const groups: { title: string; items: MenuItem[] }[] = [
     items: [
       { to: '/raporlar', label: 'Raporlar', icon: FileBarChart },
       { to: '/yorumlar', label: 'Yorumlar', icon: MessagesSquare },
-      { to: '/veri-kaynaklari', label: 'Veri Kaynakları', icon: Database },
+      { to: '/veri-kaynaklari', label: 'Veri Kaynakları', icon: Database, roles: ['Admin', 'DepartmentManager'] },
+      { to: '/kullanicilar', label: 'Kullanıcılar', icon: UserCog, roles: ['Admin'] },
       { to: '/ayarlar', label: 'Ayarlar', icon: Settings },
     ],
   },
@@ -57,6 +59,12 @@ const groups: { title: string; items: MenuItem[] }[] = [
  * arka plan örtülü (backdrop) bir çekmece (drawer). `open`/`onClose` mobil çekmece durumunu yönetir.
  */
 export function Sidebar({ open, onClose }: { open: boolean; onClose: () => void }) {
+  const userRoles = useAuth((s) => s.user?.roles ?? [])
+  const canSee = (item: MenuItem) => !item.roles || item.roles.some((r) => userRoles.includes(r))
+  const visibleGroups = groups
+    .map((g) => ({ ...g, items: g.items.filter(canSee) }))
+    .filter((g) => g.items.length > 0)
+
   return (
     <>
       {open && (
@@ -81,7 +89,7 @@ export function Sidebar({ open, onClose }: { open: boolean; onClose: () => void 
         </div>
 
         <nav className="flex-1 space-y-6 overflow-y-auto px-3 py-4">
-          {groups.map((group) => (
+          {visibleGroups.map((group) => (
             <div key={group.title}>
               <div className="px-3 pb-2 text-[11px] font-semibold uppercase tracking-wider text-sidebar-muted">
                 {group.title}

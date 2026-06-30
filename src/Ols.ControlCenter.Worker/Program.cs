@@ -16,6 +16,7 @@ builder.Services.AddRedisConnection(builder.Configuration);
 // Worker, canlı olayları Redis'e yayınlar; API'deki köprü SignalR ile dashboard'a iletir.
 builder.Services.AddSingleton<IRealtimeNotifier, RedisRealtimeNotifier>();
 builder.Services.AddScoped<PeriodicSyncJob>();
+builder.Services.AddScoped<DailyKpiSnapshotJob>();
 
 // Hangfire — bellek tabanlı depolama (recurring job her başlangıçta yeniden kaydedilir,
 // kalıcılık gerekmez; Postgres şemasını kirletmeden çalışır).
@@ -34,5 +35,15 @@ recurringJobs.AddOrUpdate<PeriodicSyncJob>(
     "periodic-data-sync",
     job => job.RunAsync(CancellationToken.None),
     Cron.Minutely);
+
+// Günlük KPI snapshot (gece yarısı UTC) — trend grafiği boş günlerde de veri noktası alsın.
+recurringJobs.AddOrUpdate<DailyKpiSnapshotJob>(
+    "daily-kpi-snapshot",
+    job => job.RunAsync(CancellationToken.None),
+    Cron.Daily);
+
+// Başlangıçta bir kez yakala — trend grafiği ilk açılıştan itibaren (günlük cron'u beklemeden) dolu olsun.
+host.Services.GetRequiredService<IBackgroundJobClient>()
+    .Enqueue<DailyKpiSnapshotJob>(job => job.RunAsync(CancellationToken.None));
 
 host.Run();

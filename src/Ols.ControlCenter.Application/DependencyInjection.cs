@@ -34,6 +34,7 @@ public static class DependencyInjection
         services.AddScoped<ITaskService, TaskService>();
         services.AddScoped<IAiSummaryService, AiSummaryService>();
         services.AddScoped<IKpiService, KpiService>();
+        services.AddScoped<IKpiSnapshotService, KpiSnapshotService>();
         services.AddScoped<ITrackingMetricsService, TrackingMetricsService>();
         services.AddScoped<IFinanceSummaryService, FinanceSummaryService>();
         services.AddScoped<INotificationService, NotificationService>();

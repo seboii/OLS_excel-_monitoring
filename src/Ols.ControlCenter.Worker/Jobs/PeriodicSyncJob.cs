@@ -2,6 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using Ols.ControlCenter.Application.Abstractions.DataIntegration;
 using Ols.ControlCenter.Application.Abstractions.Persistence;
 using Ols.ControlCenter.Application.Abstractions.Realtime;
+using Ols.ControlCenter.Application.Features.Kpi;
 using Ols.ControlCenter.Application.Features.Risk;
 using Ols.ControlCenter.Domain.Enums;
 
@@ -18,6 +19,7 @@ public sealed class PeriodicSyncJob
     private readonly IApplicationDbContext _db;
     private readonly IDataImportService _import;
     private readonly IRiskEngine _risk;
+    private readonly IKpiSnapshotService _snapshots;
     private readonly IRealtimeNotifier _realtime;
     private readonly ILogger<PeriodicSyncJob> _logger;
 
@@ -25,12 +27,14 @@ public sealed class PeriodicSyncJob
         IApplicationDbContext db,
         IDataImportService import,
         IRiskEngine risk,
+        IKpiSnapshotService snapshots,
         IRealtimeNotifier realtime,
         ILogger<PeriodicSyncJob> logger)
     {
         _db = db;
         _import = import;
         _risk = risk;
+        _snapshots = snapshots;
         _realtime = realtime;
         _logger = logger;
     }
@@ -86,6 +90,9 @@ public sealed class PeriodicSyncJob
             await _realtime.NotifyAsync(RealtimeEvents.AlertsChanged, new { triggered }, ct);
             await _realtime.NotifyAsync(RealtimeEvents.NotificationsChanged, ct: ct);
             _logger.LogInformation("Otomatik sync sonrası risk motoru çalıştı: {Triggered} kural tetiklendi.", triggered);
+
+            // Senkron sonrası bugünün KPI snapshot'ını tazele (trend grafiği için).
+            await _snapshots.CaptureGlobalAsync(ct);
         }
     }
 }

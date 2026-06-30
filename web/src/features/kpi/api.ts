@@ -46,3 +46,25 @@ export function useGroupKpi() {
     },
   })
 }
+
+export interface KpiTrendPoint {
+  date: string
+  total: number
+  current: number
+  completed: number
+  delayed: number
+  risky: number
+  critical: number
+  avgDelay: number
+  openAlerts: number
+}
+
+export function useKpiTrends(days = 30) {
+  return useQuery({
+    queryKey: ['kpi-trends', days],
+    queryFn: async () => {
+      const { data } = await api.get<ApiResponse<KpiTrendPoint[]>>('/kpi/trends', { params: { days } })
+      return data.data as KpiTrendPoint[]
+    },
+  })
+}

@@ -1,14 +1,15 @@
 import { useState } from 'react'
 import type { ReactNode } from 'react'
-import { Layers, LayoutGrid } from 'lucide-react'
+import { Layers, LayoutGrid, TrendingUp } from 'lucide-react'
 import { Card } from '@/components/ui/Card'
+import { KpiTrendChart } from '@/components/KpiTrendChart'
 import { useBoardKpi, useGroupKpi } from '@/features/kpi/api'
 import { cn } from '@/lib/utils'
 
 const GROUP_COLORS: Record<string, string> = { Deniz: 'bg-sky-500', Kara: 'bg-amber-500', Hava: 'bg-indigo-500' }
 
 export function KpiPage() {
-  const [tab, setTab] = useState<'group' | 'board'>('group')
+  const [tab, setTab] = useState<'trend' | 'group' | 'board'>('trend')
   const group = useGroupKpi()
   const board = useBoardKpi()
 
@@ -20,9 +21,12 @@ export function KpiPage() {
       </div>
 
       <div className="flex gap-2 border-b">
+        <Tab active={tab === 'trend'} onClick={() => setTab('trend')} icon={<TrendingUp className="h-4 w-4" />} label="Trend" />
         <Tab active={tab === 'group'} onClick={() => setTab('group')} icon={<LayoutGrid className="h-4 w-4" />} label="Grup" />
         <Tab active={tab === 'board'} onClick={() => setTab('board')} icon={<Layers className="h-4 w-4" />} label="Sekme" />
       </div>
+
+      {tab === 'trend' && <KpiTrendChart />}
 
       {tab === 'group' && (
         <Card className="overflow-x-auto p-1.5">

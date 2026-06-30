@@ -91,6 +91,23 @@ services:
     ports:
       - "${WEB_PORT:-8088}:80"
 
+  # ───────────── Genel erişim tüneli (profil: tunnel) ─────────────
+  # ngrok, web (nginx) container'ına tünel açar → tüm uygulama (SPA + /api proxy) tek public
+  # URL'den erişilir. Authtoken .env'den gelir (NGROK_AUTHTOKEN); boşsa ngrok başlamaz (yayın açılmaz).
+  # Public URL'i öğrenmek: http://localhost:4040/api/tunnels (yerel ngrok panosu).
+  ngrok:
+    image: ngrok/ngrok:latest
+    container_name: ols-ngrok
+    restart: unless-stopped
+    profiles: ["tunnel"]
+    depends_on:
+      - web
+    environment:
+      NGROK_AUTHTOKEN: ${NGROK_AUTHTOKEN:-}
+    command: ["http", "web:80"]
+    ports:
+      - "4040:4040"
+
   # ───────────── Yardımcı: pgAdmin (profil: tools) ─────────────
   pgadmin:
     image: dpage/pgadmin4:latest

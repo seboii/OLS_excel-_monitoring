@@ -1,14 +1,17 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Ols.ControlCenter.Application.Abstractions.DataIntegration;
 using Ols.ControlCenter.Application.Abstractions.Realtime;
 using Ols.ControlCenter.Application.Abstractions.Security;
 using Ols.ControlCenter.Application.Features.DataSources;
 using Ols.ControlCenter.Shared.Api;
+using Ols.ControlCenter.Shared.Authorization;
 
 namespace Ols.ControlCenter.Api.Controllers;
 
 [ApiController]
 [Route("api/data-sources")]
+[Authorize(Roles = AppRoles.Admin + "," + AppRoles.DepartmentManager)]
 public sealed class DataSourcesController : ControllerBase
 {
     private readonly IDataSourceService _service;

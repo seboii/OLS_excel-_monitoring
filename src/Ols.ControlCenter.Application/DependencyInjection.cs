@@ -15,6 +15,7 @@ using Ols.ControlCenter.Application.Features.Notifications;
 using Ols.ControlCenter.Application.Features.Operations;
 using Ols.ControlCenter.Application.Features.Risk;
 using Ols.ControlCenter.Application.Features.Tasks;
+using Ols.ControlCenter.Application.Features.Users;
 
 namespace Ols.ControlCenter.Application;
 
@@ -38,6 +39,7 @@ public static class DependencyInjection
         services.AddScoped<ITrackingMetricsService, TrackingMetricsService>();
         services.AddScoped<IFinanceSummaryService, FinanceSummaryService>();
         services.AddScoped<INotificationService, NotificationService>();
+        services.AddScoped<IUserService, UserService>();
 
         // Risk motoru — 7 kural + motor
         services.AddScoped<IRiskRule, DelayRule>();

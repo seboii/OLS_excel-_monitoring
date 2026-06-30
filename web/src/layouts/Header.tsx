@@ -1,9 +1,10 @@
 import { useEffect, useRef, useState } from 'react'
-import { Bell, LogOut, Menu, Search, Loader2 } from 'lucide-react'
+import { LogOut, Menu, Search, Loader2 } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '@/store/auth'
 import { useRealtimeStatus } from '@/services/realtime'
 import { useGlobalSearch } from '@/features/boards/api'
+import { NotificationBell } from '@/components/NotificationBell'
 import { riskLevelClasses, riskLevelLabels, tr } from '@/lib/labels'
 import { cn } from '@/lib/utils'
 
@@ -126,10 +127,7 @@ export function Header({ onMenuClick }: { onMenuClick: () => void }) {
           {connected ? 'Canlı' : 'Çevrimdışı'}
         </span>
 
-        <button className="relative rounded-lg p-2 transition hover:bg-secondary" title="Bildirimler">
-          <Bell className="h-5 w-5 text-slate-600" />
-          <span className="absolute right-1.5 top-1.5 h-2 w-2 rounded-full bg-red-500" />
-        </button>
+        <NotificationBell />
 
         <div className="flex items-center gap-2 border-l pl-2 sm:gap-3 sm:pl-3">
           <div className="hidden text-right leading-tight sm:block">

@@ -14,6 +14,7 @@ const RealtimeEvents = {
   TasksChanged: 'tasks-changed',
   CommentsChanged: 'comments-changed',
   DataSynced: 'data-synced',
+  NotificationsChanged: 'notifications-changed',
 } as const
 
 /** Hub bağlantı durumu — header'daki "Canlı" göstergesi bunu okur. */
@@ -60,7 +61,11 @@ export function useRealtime() {
             ['tasks'],
             ['kpi-boards'],
             ['kpi-groups'],
+            ['notifications'],
           ])
+          break
+        case RealtimeEvents.NotificationsChanged:
+          invalidate([['notifications']])
           break
         case RealtimeEvents.TasksChanged:
           invalidate([['tasks'], ['dashboard-summary']])

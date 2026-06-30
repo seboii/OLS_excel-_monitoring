@@ -2,6 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using Ols.ControlCenter.Application.Abstractions.Persistence;
 using Ols.ControlCenter.Application.Abstractions.Risk;
 using Ols.ControlCenter.Application.Features.Boards;
+using Ols.ControlCenter.Application.Features.Notifications;
 using Ols.ControlCenter.Domain.Entities;
 using Ols.ControlCenter.Domain.Enums;
 
@@ -30,13 +31,19 @@ public sealed class RiskEngine : IRiskEngine
     private readonly IReadOnlyList<IRiskRule> _rules;
     private readonly ITrackingMetricsService _metrics;
     private readonly IRiskThresholdService _thresholds;
+    private readonly INotificationService _notifications;
 
-    public RiskEngine(IApplicationDbContext db, IEnumerable<IRiskRule> rules, ITrackingMetricsService metrics, IRiskThresholdService thresholds)
+    /// <summary>Bu değerlendirme turunda <b>ilk kez</b> oluşan uyarılar — tur sonunda digest bildirimi üretir.</summary>
+    private readonly List<(RiskLevel Level, string Description)> _newAlerts = new();
+
+    public RiskEngine(IApplicationDbContext db, IEnumerable<IRiskRule> rules, ITrackingMetricsService metrics,
+        IRiskThresholdService thresholds, INotificationService notifications)
     {
         _db = db;
         _rules = rules.ToList();
         _metrics = metrics;
         _thresholds = thresholds;
+        _notifications = notifications;
     }
 
     public async Task<int> EvaluateAllAsync(CancellationToken ct)
@@ -44,11 +51,47 @@ public sealed class RiskEngine : IRiskEngine
         var now = DateTimeOffset.UtcNow;
         var today = DateOnly.FromDateTime(DateTime.UtcNow);
 
+        _newAlerts.Clear();
+
         int triggeredCount = await EvaluateOperationsAsync(now, today, ct);
         triggeredCount += await EvaluateBoardsAsync(now, today, ct);
 
+        await PublishDigestAsync(ct);
+
         await _db.SaveChangesAsync(ct);
         return triggeredCount;
+    }
+
+    /// <summary>
+    /// Tur boyunca ilk kez oluşan turuncu+ uyarılar varsa, tüm aktif kullanıcılara <b>tek</b> bir özet
+    /// bildirim ekler (satır-başına değil — sel önlenir). SaveChanges motorun tur sonundaki çağrısıyla yapılır.
+    /// </summary>
+    private async Task PublishDigestAsync(CancellationToken ct)
+    {
+        var relevant = _newAlerts.Where(a => a.Level >= RiskLevel.Orange).ToList();
+        if (relevant.Count == 0) return;
+
+        var critical = relevant.Count(a => a.Level >= RiskLevel.Red);
+        var warning = relevant.Count - critical;
+
+        var title = critical > 0
+            ? $"{critical} kritik uyarı oluştu"
+            : $"{warning} yeni risk uyarısı oluştu";
+
+        var parts = new List<string>();
+        if (critical > 0) parts.Add($"{critical} kritik (kırmızı/siyah)");
+        if (warning > 0) parts.Add($"{warning} turuncu");
+        var header = $"Risk taraması: {string.Join(", ", parts)} uyarı tespit edildi.";
+
+        var samples = relevant
+            .OrderByDescending(a => a.Level)
+            .Take(5)
+            .Select(a => $"• {a.Description}");
+        var body = header + "\n" + string.Join("\n", samples);
+
+        var level = critical > 0 ? NotificationLevel.Critical : NotificationLevel.Warning;
+        await _notifications.EnqueueForAllActiveUsersAsync(
+            NotificationType.CriticalOperation, level, title, body, "Alert", null, ct);
     }
 
     // ───────────── Pass A: eski Operation modeli (demo veri) ─────────────
@@ -132,6 +175,7 @@ public sealed class RiskEngine : IRiskEngine
                     };
                     _db.Alerts.Add(created);
                     alertByKey[key] = created;
+                    _newAlerts.Add((result.Level, result.Message));
                 }
             }
 
@@ -192,6 +236,7 @@ public sealed class RiskEngine : IRiskEngine
                 };
                 _db.Alerts.Add(alert);
                 byKey[key] = alert;
+                _newAlerts.Add((level, message));
             }
         }
 

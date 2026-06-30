@@ -11,6 +11,7 @@ using Ols.ControlCenter.Application.Features.Kpi;
 using Ols.ControlCenter.Application.Features.Dashboard;
 using Ols.ControlCenter.Application.Features.DataSources;
 using Ols.ControlCenter.Application.Features.Finance;
+using Ols.ControlCenter.Application.Features.Notifications;
 using Ols.ControlCenter.Application.Features.Operations;
 using Ols.ControlCenter.Application.Features.Risk;
 using Ols.ControlCenter.Application.Features.Tasks;
@@ -35,6 +36,7 @@ public static class DependencyInjection
         services.AddScoped<IKpiService, KpiService>();
         services.AddScoped<ITrackingMetricsService, TrackingMetricsService>();
         services.AddScoped<IFinanceSummaryService, FinanceSummaryService>();
+        services.AddScoped<INotificationService, NotificationService>();
 
         // Risk motoru — 7 kural + motor
         services.AddScoped<IRiskRule, DelayRule>();

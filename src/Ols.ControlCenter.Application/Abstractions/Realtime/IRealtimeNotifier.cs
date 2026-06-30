@@ -27,4 +27,7 @@ public static class RealtimeEvents
 
     /// <summary>Veri kaynağından senkron tamamlandı (operasyon/KPI verileri tazelenmeli).</summary>
     public const string DataSynced = "data-synced";
+
+    /// <summary>Kullanıcı bildirimi oluştu/okundu (header zil rozeti ve liste tazelenmeli).</summary>
+    public const string NotificationsChanged = "notifications-changed";
 }

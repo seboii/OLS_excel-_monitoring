@@ -84,6 +84,7 @@ public sealed class PeriodicSyncJob
         {
             var triggered = await _risk.EvaluateAllAsync(ct);
             await _realtime.NotifyAsync(RealtimeEvents.AlertsChanged, new { triggered }, ct);
+            await _realtime.NotifyAsync(RealtimeEvents.NotificationsChanged, ct: ct);
             _logger.LogInformation("Otomatik sync sonrası risk motoru çalıştı: {Triggered} kural tetiklendi.", triggered);
         }
     }

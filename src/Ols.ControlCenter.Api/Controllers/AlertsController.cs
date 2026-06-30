@@ -47,6 +47,7 @@ public sealed class AlertsController : ControllerBase
     {
         var count = await _riskEngine.EvaluateAllAsync(ct);
         await _realtime.NotifyAsync(RealtimeEvents.AlertsChanged, new { triggered = count }, ct);
+        await _realtime.NotifyAsync(RealtimeEvents.NotificationsChanged, ct: ct);
         return Ok(ApiResponse<object>.Ok(new { triggered = count }, $"Risk motoru çalıştı, {count} kural tetiklendi."));
     }
 }

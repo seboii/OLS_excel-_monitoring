@@ -40,6 +40,19 @@ export function useComments(subject: CommentSubject | null) {
   })
 }
 
+/** Merkezi "Yorumlar" akışı: tüm operasyon + board satırlarından en yeni yorumlar. */
+export function useRecentComments(group?: string, take = 50) {
+  return useQuery({
+    queryKey: ['comments', 'recent', group ?? 'all', take],
+    queryFn: async () => {
+      const { data } = await api.get<ApiResponse<CommentItem[]>>('/comments/recent', {
+        params: { group, take },
+      })
+      return data.data as CommentItem[]
+    },
+  })
+}
+
 export function useAddComment(subject: CommentSubject | null) {
   const qc = useQueryClient()
   return useMutation({

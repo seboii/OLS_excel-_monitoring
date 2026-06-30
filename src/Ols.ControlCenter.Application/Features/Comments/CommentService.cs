@@ -25,6 +25,9 @@ public interface ICommentService
     Task<IReadOnlyList<CommentDto>> GetByBoardRowAsync(string boardKey, string recordRef, CancellationToken ct);
     Task<CommentDto?> AddToBoardRowAsync(string boardKey, string recordRef, CreateCommentRequest req, long userId, CancellationToken ct);
 
+    /// <summary>Tüm operasyon + board satırlarından en yeni yorumlar (merkezi "Yorumlar" akışı için).</summary>
+    Task<IReadOnlyList<CommentDto>> GetRecentAsync(string? group, int take, CancellationToken ct);
+
     Task<bool> CancelAsync(long commentId, long userId, CancellationToken ct);
 }
 
@@ -117,6 +120,29 @@ public sealed class CommentService : ICommentService
         var author = await _db.Users.Where(u => u.Id == userId).Select(u => u.FullName).FirstOrDefaultAsync(ct) ?? "—";
         return new CommentDto(
             comment.Id, null, meta.Key, meta.Title, meta.Group, recordRef, author, type.ToString(), comment.Body, comment.Mentions, now);
+    }
+
+    public async Task<IReadOnlyList<CommentDto>> GetRecentAsync(string? group, int take, CancellationToken ct)
+    {
+        var q = _db.Comments.AsNoTracking().Where(c => !c.IsCancelled);
+        if (!string.IsNullOrWhiteSpace(group))
+            q = q.Where(c => c.Group == group);
+
+        var raw = await q
+            .OrderByDescending(c => c.CreatedAt)
+            .Take(Math.Clamp(take, 1, 200))
+            .Select(c => new
+            {
+                c.Id, c.OperationId, c.BoardKey, c.BoardTitle, c.Group, c.RecordRef,
+                OpNo = c.Operation != null ? c.Operation.SourceOperationNo : null,
+                Author = c.Author.FullName, c.Type, c.Body, c.Mentions, c.CreatedAt,
+            })
+            .ToListAsync(ct);
+
+        return raw.Select(c => new CommentDto(
+            c.Id, c.OperationId, c.BoardKey,
+            c.BoardTitle ?? (c.OpNo is not null ? $"Operasyon {c.OpNo}" : null),
+            c.Group, c.RecordRef ?? c.OpNo, c.Author, c.Type.ToString(), c.Body, c.Mentions, c.CreatedAt)).ToList();
     }
 
     public async Task<bool> CancelAsync(long commentId, long userId, CancellationToken ct)

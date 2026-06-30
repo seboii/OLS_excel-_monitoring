@@ -39,6 +39,11 @@ public sealed class CommentsController : ControllerBase
         return Ok(ApiResponse<CommentDto>.Ok(dto, "Yorum eklendi."));
     }
 
+    [HttpGet("api/comments/recent")]
+    public async Task<ActionResult<ApiResponse<IReadOnlyList<CommentDto>>>> GetRecent(
+        [FromQuery] string? group, [FromQuery] int take = 50, CancellationToken ct = default)
+        => Ok(ApiResponse<IReadOnlyList<CommentDto>>.Ok(await _comments.GetRecentAsync(group, take, ct)));
+
     [HttpGet("api/boards/{boardKey}/comments")]
     public async Task<ActionResult<ApiResponse<IReadOnlyList<CommentDto>>>> GetByBoardRow(
         string boardKey, [FromQuery] string @ref, CancellationToken ct)

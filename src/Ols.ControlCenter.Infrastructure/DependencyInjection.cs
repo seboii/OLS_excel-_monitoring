@@ -3,10 +3,12 @@ using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
+using Ols.ControlCenter.Application.Abstractions.Ai;
 using Ols.ControlCenter.Application.Abstractions.DataIntegration;
 using Ols.ControlCenter.Application.Abstractions.Persistence;
 using Ols.ControlCenter.Application.Abstractions.Reports;
 using Ols.ControlCenter.Application.Abstractions.Security;
+using Ols.ControlCenter.Infrastructure.Ai;
 using Ols.ControlCenter.Infrastructure.DataIntegration;
 using Ols.ControlCenter.Infrastructure.Persistence;
 using Ols.ControlCenter.Infrastructure.Reports;
@@ -54,6 +56,10 @@ public static class DependencyInjection
 
         // Raporlama
         services.AddScoped<IReportService, ExcelReportService>();
+
+        // AI özet (Claude) — anahtar yoksa devre dışı, servisler kural-tabanlıya düşer
+        services.Configure<AiOptions>(config.GetSection(AiOptions.SectionName));
+        services.AddSingleton<IAiClient, AnthropicAiClient>();
 
         return services;
     }

@@ -56,6 +56,9 @@ services:
       Seed__AdminEmail: ${SEED__AdminEmail:-admin@ols.local}
       Seed__AdminPassword: ${SEED__AdminPassword:-Admin123!}
       Encryption__Key: ${ENCRYPTION__Key:-}
+      Ai__ApiKey: ${AI__ApiKey:-}
+      Ai__Model: ${AI__Model:-claude-opus-4-8}
+      Ai__Enabled: ${AI__Enabled:-true}
     ports:
       - "${API_PORT:-5080}:8080"
 

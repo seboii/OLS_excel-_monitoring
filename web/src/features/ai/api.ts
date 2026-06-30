@@ -9,6 +9,7 @@ export interface AiSection {
 export interface AiSummary {
   sections: AiSection[]
   generatedAt: string
+  aiGenerated: boolean
 }
 
 export function useAiSummary() {
